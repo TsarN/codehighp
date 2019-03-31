@@ -1,0 +1,57 @@
+main {
+    margin-top: 32px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    flex: 1 1 auto;
+}
+
+.fullwidth {
+    width: 100%;
+}
+
+header > a.selected {
+    border-bottom: 3px solid black !important;
+}
+
+.right {
+    float: right;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-flow: column;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td,th {
+    border: 1px solid black;
+    padding: 16px;
+}
+
+th {
+    background-color: #ddd;
+}
+
+.help-inline {
+    display: block;
+}
+
+.my-card {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.tag {
+    font-size: 24px;
+    font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+    background-color: black;
+    color: white;
+    padding: 4px;
+    border-radius: 3px;
+}

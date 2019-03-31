@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}CodeHighp{% endblock %}</title>
+
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'mini-default.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}"/>
+</head>
+<body>
+<header>
+    <a href="/" class="logo">
+        CodeHighp
+    </a>
+    <a href="{% url 'problem_list' %}" class="button {% if request.resolver_match.url_name == 'problem_list' %}selected{% endif %}">
+        Problems
+    </a>
+    {% if user.is_staff %}
+    <a href="/admin" class="button">
+        Admin panel
+    </a>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="right button">log out</a>
+        <a href="{% url 'profile' user.username %}" class="right button
+{% if request.resolver_match.url_name == 'profile' and customuser.id == user.id %}selected{% endif %}">
+            <span class="icon-user"></span>
+            {{ user.username }}
+        </a>
+    {% else %}
+        <a href="{% url 'signup' %}" class="right button {% if request.resolver_match.url_name == 'signup' %}selected{% endif %}">sign up</a>
+        <a href="{% url 'login' %}" class="right button {% if request.resolver_match.url_name == 'login' %}selected{% endif %}">log in</a>
+    {% endif %}
+</header>
+{% block body %}
+{% endblock %}
+<footer>
+    <a href="/">CodeHighp</a>
+    &copy; Nikita Tsarev 2019 |
+    <a href="#">Privacy policy</a>
+</footer>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<script src="{% static 'mathjax/MathJax.js' %}?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

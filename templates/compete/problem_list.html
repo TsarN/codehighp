@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<main class="fullwidth">
+<h2>Problems</h2>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th class="fullwidth">Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for problem in problem_list %}
+        <tr>
+            <td>{{ problem.id }}</td>
+            <td class="fullwidth">
+                <a href="{% url 'problem' problem.pk %}">
+                    {{ problem.name }}
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</main>
+{% endblock %}

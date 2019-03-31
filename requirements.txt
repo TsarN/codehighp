@@ -1,0 +1,6 @@
+Django==2.1.7
+django-crispy-forms==1.7.2
+django-npm==1.0.0
+markdown2==2.3.7
+pytz==2018.9
+PyYAML==5.1

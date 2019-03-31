@@ -1,0 +1,25 @@
+flavor: "plain"
+
+limits:
+    real_time: 1000
+    cpu_time: 1000
+    address_space: 262144
+    threads: 1
+    source_size: 65536
+
+groups:
+    0:
+        vars:
+            N: 8
+        tests: 5
+        score: 0
+    1:
+        vars:
+            N: 1048576
+        tests: 5
+        score: 0.2
+    2:
+        vars:
+            N: 16777216
+        tests: 5
+        score: 0.8

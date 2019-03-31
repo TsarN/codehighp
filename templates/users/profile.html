@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<main class="fullwidth">
+    <div class="my-card">
+        <h2>
+            {% if customuser.is_staff %}
+                <span class="tag" title="Administrator">#</span>
+            {% endif %}
+            {{ customuser.username }}
+        </h2>
+
+        {{ customuser.get_full_name }}
+
+        {% if user.id == customuser.id or user.is_staff %}
+            <hr />
+            <a href="#" class="button">Edit profile</a>
+            <a href="#" class="button">Change password</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

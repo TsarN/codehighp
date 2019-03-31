@@ -1,0 +1,10 @@
+gcc:
+    name: "GNU C11 8.2.1"
+    flavor: "native"
+    compile: ["/usr/bin/gcc", "{src}", "{obj}", "-std=c11", "-g0", "-O2", "-o", "{exe}"]
+
+g++:
+    name: "GNU C++17 8.2.1"
+    flavor: "native"
+    compile: ["/usr/bin/g++", "{src}", "{obj}", "-std=c++17", "-g0", "-O2", "-o", "{exe}"]
+

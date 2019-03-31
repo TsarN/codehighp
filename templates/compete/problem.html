@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load markdown %}
+
+{% block body %}
+<main class="fullwidth">
+    <h2>{{ problem.id }}. {{ problem.name }}</h2>
+<pre>{{ problem.humanized_limits }}</pre>
+
+{{ problem.statement|markdown }}
+<hr />
+
+{% if user.is_authenticated %}
+    {% if runs %}
+        <h3>Your runs:</h3>
+        <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>When</th>
+            <th>Lang</th>
+            <th>Status</th>
+            <th>Time</th>
+            <th>Memory</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for run in runs %}
+        <tr>
+            <td>{{ run.id }}</td>
+            <td>{{ run.date }}</td>
+            <td>{{ run.get_lang_display }}</td>
+            <td>{{ run.get_status_display }}</td>
+            <td>{{ run.cpu_used }} ms</td>
+            <td>{{ run.memory_used }} KiB</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    {% else %}
+        <em>You don't have any attempts on this problem.</em>
+    {% endif %}
+{% else %}
+    <em>
+        <a href="#">Log in</a> to submit solutions
+    </em>
+{% endif %}
+</main>
+{% endblock %}
