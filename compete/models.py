@@ -30,18 +30,18 @@ class Problem(models.Model):
         return "<Problem id=%d name=%s>" % (self.id, self.name)
 
     @property
-    def limits(self):
+    def config(self):
         if hasattr(self, "_config"):
-            return self._config.get('limits', dict())
+            return self._config
         with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, "problem.yaml")) as f:
             self._config = yaml.safe_load(f)
-        return self._config.get('limits', dict())
+        return self._config
 
     @property
     def humanized_limits(self):
-        result = ""
+        result = "Flavor: <a href=\"/help/flavors/{0}\">{0}</a>\n".format(self.config.get('flavor'))
         for limit, msg, factor in self.LIMITS:
-            value = self.limits.get(limit)
+            value = self.config.get('limits', {}).get(limit)
             if not value:
                 continue
             value *= factor
@@ -74,8 +74,8 @@ class Run(models.Model):
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     lang = models.CharField(max_length=16, choices=settings.COMPILERS_ENUM)
     status = models.CharField(max_length=2, choices=STATUS, default=UNKNOWN)
-    cpu_used = models.PositiveIntegerField(help_text="in milliseconds")
-    memory_used = models.PositiveIntegerField(help_text="in kilobytes")
+    cpu_used = models.PositiveIntegerField(help_text="in milliseconds", default=0)
+    memory_used = models.PositiveIntegerField(help_text="in kilobytes", default=0)
     score = models.FloatField(default=0.0)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 

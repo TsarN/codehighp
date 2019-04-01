@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load compete %}
+
+{% block body %}
+    <main class="fullwidth">
+        <a href="{% url 'problem' problem.id %}">&laquo; back</a>
+        <h2>
+            Your runs for problem "{{ problem.id }}. {{ problem.name }}"
+        </h2>
+        {% run_list run_list %}
+
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+        <span class="page-current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+        {% endif %}
+    </main>
+{% endblock %}

@@ -1,5 +1,5 @@
 import os
-import tempfile
+import base64
 
 from celery import shared_task
 from django.conf import settings
@@ -17,6 +17,8 @@ def invoke_run(run_id, prob_id, lang_id, src):
     except Run.DoesNotExist:
         return
 
+    src = base64.b64decode(src)
+
     if lang_id not in settings.COMPILERS:
         run.status = Run.COMPILATION_ERROR
         run.save()
@@ -25,7 +27,7 @@ def invoke_run(run_id, prob_id, lang_id, src):
     lang_conf = settings.COMPILERS[lang_id]
 
     src_file = get_tempfile_name() + lang_conf['suffix']
-    with open(src_file, 'w') as f:
+    with open(src_file, 'wb') as f:
         f.write(src)
 
     if lang_conf['flavor'] == 'native':
@@ -33,6 +35,7 @@ def invoke_run(run_id, prob_id, lang_id, src):
         run.save()
 
         exe_path, verdict, compile_log = compile_native(src_file, lang_conf)
+        os.remove(src_file)
         if verdict != Run.ACCEPTED:
             run.status = verdict
             run.write_log(dict(compile=compile_log))
@@ -52,16 +55,12 @@ def invoke_run(run_id, prob_id, lang_id, src):
     run.save()
 
 
-def do_invoke_run(run_id):
-    try:
-        run = Run.objects.get(pk=run_id)
-    except Run.DoesNotExist:
-        return None
-
+def do_invoke_run(run):
     prob_id = run.problem.internal_name
     lang_id = run.lang
-    with open(run.src_path, 'r') as f:
+    with open(run.src_path, 'rb') as f:
         src = f.read()
+    src = base64.b64encode(src).decode()
 
     run.status = Run.IN_QUEUE
     run.score = 0
@@ -69,4 +68,4 @@ def do_invoke_run(run_id):
     run.memory_used = 0
     run.save()
 
-    invoke_run.delay(run_id, prob_id, lang_id, src)
+    invoke_run.delay(run.pk, prob_id, lang_id, src)

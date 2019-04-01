@@ -23,3 +23,7 @@ CELERY_TIMEZONE = 'Europe/Moscow'
 
 INVOKER_STORE = '/tmp/invoker'
 MAX_LOG_FILE_SIZE = 65536
+
+INSTALLED_APPS.append('debug_toolbar')
+MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+INTERNAL_IPS = ['127.0.0.1']

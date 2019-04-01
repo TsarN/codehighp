@@ -118,4 +118,6 @@ PROBLEM_DIR = os.path.join(DATA_DIR, 'problems')
 
 with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
     COMPILERS = yaml.safe_load(f)
-COMPILERS_ENUM = ((k, v['name']) for k, v in COMPILERS.items())
+COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
+
+RUNS_ON_PROBLEM_PAGE = 15

@@ -1,7 +1,7 @@
 flavor: "native"
 
 limits:
-    real_time: 1000
+    real_time: 5000
     cpu_time: 1000
     address_space: 262144
     threads: 1

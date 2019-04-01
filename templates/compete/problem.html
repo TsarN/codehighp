@@ -1,47 +1,29 @@
 {% extends 'base.html' %}
 {% load markdown %}
+{% load crispy_forms_tags %}
+{% load compete %}
 
 {% block body %}
 <main class="fullwidth">
     <h2>{{ problem.id }}. {{ problem.name }}</h2>
-<pre>{{ problem.humanized_limits }}</pre>
+<pre>{{ problem.humanized_limits|safe }}</pre>
 
 {{ problem.statement|markdown }}
 <hr />
 
 {% if user.is_authenticated %}
+    {% crispy form %}
+    <hr />
     {% if runs %}
-        <h3>Your runs:</h3>
-        <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>When</th>
-            <th>Lang</th>
-            <th>Status</th>
-            <th>Time</th>
-            <th>Memory</th>
-            <th>Score</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for run in runs %}
-        <tr>
-            <td>{{ run.id }}</td>
-            <td>{{ run.date }}</td>
-            <td>{{ run.get_lang_display }}</td>
-            <td>{{ run.get_status_display }}</td>
-            {% if run.status == 'AC' %}
-            <td>{{ run.cpu_used }} ms</td>
-            <td>{{ run.memory_used }} KiB</td>
-            <td>{{ run.score }}</td>
-            {% else %}
-            <td colspan="3">N/A</td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-        </tbody>
-        </table>
+        <h3>
+            <a href="{% url 'problem_runs' problem.id %}">Your runs</a>
+        </h3>
+        {% run_list runs %}
+        {% if runs_truncated %}
+            <em>
+                <a href="{% url 'problem_runs' problem.id %}">Show all runs</a>
+            </em>
+        {% endif %}
     {% else %}
         <em>You don't have any attempts on this problem.</em>
     {% endif %}
