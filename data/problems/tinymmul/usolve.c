@@ -2,21 +2,24 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 void solve()
 {
     unsigned int n;
     fread(&n, sizeof(n), 1, stdin);
-    unsigned int *a = malloc(3 * n * n * sizeof(unsigned int));
-    unsigned int *b = a + n * n;
-    unsigned int *c = b + n * n;
-    fread(a, 2 * n * sizeof(unsigned int), 1, stdin);
     for (unsigned int i = 0; i < n; ++i) {
         for (unsigned int j = 0; j < n; ++j) {
+            unsigned int c = 0;
             for (unsigned int k = 0; k < n; ++k) {
-                c[n * i + k] += a[n * i + j] * b[n * j + k];
+                unsigned int a, b;
+                fseek(stdin, sizeof(n) * (1 + i * n + k), SEEK_SET);
+                fread(&a, sizeof(a), 1, stdin);
+                fseek(stdin, sizeof(n) * (1 + n * n + k * n + j), SEEK_SET);
+                fread(&b, sizeof(a), 1, stdin);
+                c += a * b;
             }
+            fwrite(&c, sizeof(c), 1, stdout);
         }
     }
-    fwrite(c, n * n * sizeof(unsigned int), 1, stdout);
 }

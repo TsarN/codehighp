@@ -19,9 +19,9 @@ groups:
         vars:
             N: 1048576
         tests: 5
-        score: 0.2
+        score: 200
     2:
         vars:
             N: 16777216
         tests: 5
-        score: 0.8
+        score: 800

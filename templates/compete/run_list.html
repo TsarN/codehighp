@@ -4,6 +4,7 @@
         <th>#</th>
         <th>Who</th>
         <th>When</th>
+        <th>Problem</th>
         <th>Lang</th>
         <th>Status</th>
         <th>Time</th>
@@ -15,16 +16,21 @@
     {% for run in runs %}
         <tr>
             <td>
-                <a href="#">
+                <a href="{% url 'run' run.id %}">
                     {{ run.id }}
                 </a>
             </td>
             <td>{{ run.user.html_link }}</td>
             <td>{{ run.date }}</td>
+            <td>
+                <a href="{% url 'problem' run.problem_id %}">
+                    {{ run.problem.name }}
+                </a>
+            </td>
             <td>{{ run.get_lang_display }}</td>
             <td>
                 {% if run.status == 'CE' %}
-                    <a href="#">{{ run.get_status_display }}</a>
+                    <a href="{% url 'run' run.id %}">{{ run.get_status_display }}</a>
                 {% else %}
                     {{ run.get_status_display }}
                 {% endif %}
@@ -32,7 +38,7 @@
             {% if run.status == 'AC' %}
                 <td>{{ run.cpu_used }} ms</td>
                 <td>{{ run.memory_used }} KiB</td>
-                <td>{{ run.score }}</td>
+                <td>{{ run.normalized_score }}</td>
             {% else %}
                 <td colspan="3">N/A</td>
             {% endif %}

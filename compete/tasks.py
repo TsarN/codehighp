@@ -45,8 +45,8 @@ def invoke_run(run_id, prob_id, lang_id, src):
         stats = invoke(exe_path, prob_id)
         os.remove(exe_path)
         run.score = stats['score']
-        run.cpu_used = stats['avg_cpu']
-        run.memory_used = stats['avg_mem']
+        run.cpu_used = stats['cpu']
+        run.memory_used = stats['mem']
         run.status = Run.ACCEPTED
         run.write_log(stats['log'])
     else:
@@ -67,5 +67,6 @@ def do_invoke_run(run):
     run.cpu_used = 0
     run.memory_used = 0
     run.save()
+    run.delete_log()
 
     invoke_run.delay(run.pk, prob_id, lang_id, src)

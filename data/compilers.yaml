@@ -10,3 +10,15 @@ g++:
     suffix: ".cpp"
     compile: ["/usr/bin/g++", "[src]", "[obj]", "-std=c++17", "-g0", "-O2", "-o", "[exe]"]
 
+gcc-static:
+    name: "GNU C11 8.2.1 (static)"
+    flavor: "native"
+    suffix: ".c"
+    compile: ["/usr/bin/gcc", "[src]", "[obj]", "-std=c11", "-static", "-g0", "-O2", "-o", "[exe]"]
+
+g++-static:
+    name: "GNU C++17 8.2.1 (static)"
+    flavor: "native"
+    suffix: ".cpp"
+    compile: ["/usr/bin/g++", "[src]", "[obj]", "-std=c++17", "-static", "-g0", "-O2", "-o", "[exe]"]
+

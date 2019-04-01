@@ -70,13 +70,15 @@ class Run(models.Model):
     INTERNAL_ERROR = 'IE'
     SECURITY_VIOLATION = 'SV'
 
+    SCORE_DIVISOR = 1000
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     lang = models.CharField(max_length=16, choices=settings.COMPILERS_ENUM)
     status = models.CharField(max_length=2, choices=STATUS, default=UNKNOWN)
     cpu_used = models.PositiveIntegerField(help_text="in milliseconds", default=0)
     memory_used = models.PositiveIntegerField(help_text="in kilobytes", default=0)
-    score = models.FloatField(default=0.0)
+    score = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
@@ -90,8 +92,28 @@ class Run(models.Model):
         suff = settings.COMPILERS[self.lang]['suffix']
         return os.path.join(settings.DATA_DIR, 'runs', '%06d%s' % (self.id, suff))
 
+    @property
+    def log_path(self):
+        return os.path.join(settings.LOG_DIR, '%06d.gz' % self.id)
+
+    @property
+    def normalized_score(self):
+        return self.score / 1000
+
     def write_log(self, log):
         log['status'] = self.status
-        path = os.path.join(settings.LOG_DIR, '%06d.gz' % self.id)
-        with gzip.open(path, 'wb') as f:
+        with gzip.open(self.log_path, 'wb') as f:
             msgpack.pack(log, f)
+
+    def read_log(self):
+        try:
+            with gzip.open(self.log_path, 'rb') as f:
+                return msgpack.unpack(f)
+        except:
+            return {}
+
+    def delete_log(self):
+        try:
+            os.remove(self.log_path)
+        except:
+            pass

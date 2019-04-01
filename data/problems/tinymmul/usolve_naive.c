@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main()
+void solve()
 {
     unsigned int n;
     fread(&n, sizeof(n), 1, stdin);
@@ -21,5 +21,4 @@ int main()
         }
     }
     fwrite(c, n * n * sizeof(unsigned int), 1, stdout);
-    return 0;
 }

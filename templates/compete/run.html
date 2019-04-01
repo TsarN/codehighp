@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load compete %}
+
+{% block body %}
+<main class="fullwidth">
+    {% run_list runs %}
+    <hr />
+    <h2>Run #{{ run.id }}</h2>
+
+    {% if compile_log %}
+        <h4>Compilation log</h4>
+        <pre>{{ compile_log }}</pre>
+    {% endif %}
+
+    {% for group in tests %}
+        <h4>Group #{{ forloop.counter0 }} [Score = {{ group.score }}]</h4>
+        {% for test in group.tests %}
+            <b>Test #{{ forloop.counter0 }}</b><br />
+            <pre>
+CPU used: {{ test.cpu }} ms
+Memory used: {{ test.mem }} KiB
+Input: {{ test.input|default:"[too long]" }}
+Output: {{ test.output|default:"[too long]" }}
+Answer: {{ test.answer|default:"[too long]" }}
+Verdict: {{ test.verdict }}
+Exit code: {{ test.exitcode }}
+</pre>
+        {% endfor %}
+    {% endfor %}
+</main>
+{% endblock %}
