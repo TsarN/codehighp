@@ -1,8 +1,10 @@
 import os.path
+import gzip
 
 from django.db import models
 from django.conf import settings
 import yaml
+import msgpack
 
 from users.models import CustomUser
 
@@ -54,7 +56,9 @@ class Run(models.Model):
         ('RG', 'Running'),
         ('CE', 'Compilation error'),
         ('AC', 'Accepted'),
-        ('IG', 'Ignored')
+        ('IG', 'Ignored'),
+        ('IE', 'Internal error'),
+        ('SV', 'Security violation')
     )
 
     UNKNOWN = 'UK'
@@ -63,6 +67,8 @@ class Run(models.Model):
     COMPILATION_ERROR = 'CE'
     ACCEPTED = 'AC'
     IGNORED = 'IG'
+    INTERNAL_ERROR = 'IE'
+    SECURITY_VIOLATION = 'SV'
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
@@ -70,6 +76,7 @@ class Run(models.Model):
     status = models.CharField(max_length=2, choices=STATUS, default=UNKNOWN)
     cpu_used = models.PositiveIntegerField(help_text="in milliseconds")
     memory_used = models.PositiveIntegerField(help_text="in kilobytes")
+    score = models.FloatField(default=0.0)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
@@ -77,3 +84,14 @@ class Run(models.Model):
 
     def __repr__(self):
         return "<Run id=%d>" % self.id
+
+    @property
+    def src_path(self):
+        suff = settings.COMPILERS[self.lang]['suffix']
+        return os.path.join(settings.DATA_DIR, 'runs', '%06d%s' % (self.id, suff))
+
+    def write_log(self, log):
+        log['status'] = self.status
+        path = os.path.join(settings.LOG_DIR, '%06d.gz' % self.id)
+        with gzip.open(path, 'wb') as f:
+            msgpack.pack(log, f)

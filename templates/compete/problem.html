@@ -21,6 +21,7 @@
             <th>Status</th>
             <th>Time</th>
             <th>Memory</th>
+            <th>Score</th>
         </tr>
         </thead>
         <tbody>
@@ -30,8 +31,13 @@
             <td>{{ run.date }}</td>
             <td>{{ run.get_lang_display }}</td>
             <td>{{ run.get_status_display }}</td>
+            {% if run.status == 'AC' %}
             <td>{{ run.cpu_used }} ms</td>
             <td>{{ run.memory_used }} KiB</td>
+            <td>{{ run.score }}</td>
+            {% else %}
+            <td colspan="3">N/A</td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

@@ -1,4 +1,4 @@
-flavor: "plain"
+flavor: "native"
 
 limits:
     real_time: 1000
@@ -6,6 +6,8 @@ limits:
     address_space: 262144
     threads: 1
     source_size: 65536
+
+check: "exact"
 
 groups:
     0:

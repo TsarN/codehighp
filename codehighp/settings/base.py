@@ -113,6 +113,7 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 DATA_DIR = os.path.join(BASE_DIR, 'data')
+LOG_DIR = os.path.join(DATA_DIR, 'logs')
 PROBLEM_DIR = os.path.join(DATA_DIR, 'problems')
 
 with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
