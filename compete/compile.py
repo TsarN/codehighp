@@ -9,7 +9,7 @@ from util import get_tempfile_name
 
 def compile_native(src, lang_conf):
     exe = get_tempfile_name()
-    obj = os.path.join(settings.BASE_DIR, 'native', 'native', 'bin', 'wrapper.o')
+    obj = os.path.join(settings.BASE_DIR, 'native', 'native', 'bin', lang_conf['obj'])
     compile_cmd = []
     for i in lang_conf['compile']:
         if i == '[src]':

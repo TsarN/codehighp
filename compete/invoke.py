@@ -36,10 +36,10 @@ def run_test(exe, gen, prob_id, prob_conf, group, n):
     cpu_time_limit = prob_conf['limits']['cpu_time']
     address_space_limit = prob_conf['limits']['address_space']
 
-    with tempfile.TemporaryDirectory() as dir:
-        input_path = os.path.join(dir, 'input')
-        output_path = os.path.join(dir, 'output')
-        answer_path = os.path.join(dir, 'answer')
+    with tempfile.TemporaryDirectory() as tmpdir:
+        input_path = os.path.join(tmpdir, 'input')
+        output_path = os.path.join(tmpdir, 'output')
+        answer_path = os.path.join(tmpdir, 'answer')
 
         gen_test(gen, input_path, params)
 
