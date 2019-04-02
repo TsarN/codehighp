@@ -100,6 +100,11 @@ class Run(models.Model):
     def normalized_score(self):
         return self.score / 1000
 
+    def accessible_by(self, user):
+        if user.is_superuser:
+            return True
+        return self.user_id == user.id
+
     def write_log(self, log):
         log['status'] = self.status
         with gzip.open(self.log_path, 'wb') as f:

@@ -2,6 +2,10 @@
 {% load compete %}
 {% load paginate %}
 
+{% block title %}
+    Runs for "{{ problem.id }}. {{ problem.name }}" - CodeHighp
+{% endblock %}
+
 {% block body %}
     <main class="fullwidth">
         <a href="{% url 'problem' problem.id %}">&laquo; back</a>

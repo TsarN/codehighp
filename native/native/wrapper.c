@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     fclose(stderr);
 
     setlimit(RLIMIT_CPU, atoll(argv[1]), RLIM_INFINITY);
-    setlimit(RLIMIT_AS, atoll(argv[2]), atoll(argv[2]));
+    setlimit(RLIMIT_AS, atoll(argv[2]) * 2, atoll(argv[2]) * 2);
 
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
         return 64;

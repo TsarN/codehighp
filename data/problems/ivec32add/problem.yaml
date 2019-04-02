@@ -8,6 +8,8 @@ limits:
     source_size: 65536
 
 check: "exact"
+gen: "gen.c"
+solve: "solve.c"
 
 groups:
     0:

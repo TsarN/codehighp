@@ -3,7 +3,7 @@ flavor: "native"
 limits:
     real_time: 5000
     cpu_time: 1000
-    address_space: 1024
+    address_space: 1536
     threads: 1
     source_size: 65536
 
@@ -29,7 +29,7 @@ groups:
         vars:
             N: 128
         tests: 5
-        score: 200
+        score: 100
     4:
         vars:
             N: 256
@@ -44,4 +44,4 @@ groups:
         vars:
             N: 512
         tests: 5
-        score: 200
+        score: 300

@@ -1,7 +1,10 @@
+import base64
+
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, FormView, TemplateView
+from django.views.generic.detail import SingleObjectMixin
 
 from compete.forms import RunSubmitForm
 from compete.invoke import VERDICTS
@@ -14,7 +17,6 @@ class ProblemListView(ListView):
 
 
 class ProblemRunsView(LoginRequiredMixin, ListView):
-    login_url = '/users/login'
     model = Run
     template_name = 'compete/problem_runs.html'
     paginate_by = settings.RUNS_ON_PROBLEM_PAGE
@@ -58,15 +60,35 @@ class ProblemView(FormView):
         return redirect(self.request.get_full_path())
 
 
-class RunView(TemplateView):
+class RunView(SingleObjectMixin, UserPassesTestMixin, TemplateView):
     template_name = 'compete/run.html'
+    model = Run
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(RunView, self).dispatch(request, *args, **kwargs)
+
+    def test_func(self):
+        return self.object.accessible_by(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super(RunView, self).get_context_data(**kwargs)
-        run = get_object_or_404(Run, pk=self.kwargs.get('pk'))
+        run = self.object
         context['run'] = run
         context['runs'] = [run]
         log = run.read_log()
+
+        try:
+            with open(run.src_path, 'rb') as f:
+                src = f.read()
+            try:
+                src = src.decode()
+            except UnicodeDecodeError:
+                src = '[Source is base64 encoded]\n' + base64.b64encode(src).decode()
+        except:
+            src = None
+
+        context['src'] = src
 
         try:
             context['compile_log'] = log[b'compile'].decode()

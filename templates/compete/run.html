@@ -1,11 +1,20 @@
 {% extends 'base.html' %}
 {% load compete %}
 
+{% block title %}
+    Run #{{ run.id }} - CodeHighp
+{% endblock %}
+
 {% block body %}
 <main class="fullwidth">
     {% run_list runs %}
     <hr />
     <h2>Run #{{ run.id }}</h2>
+
+    {% if src %}
+        <h4>Source code</h4>
+        <pre>{{ src }}</pre>
+    {% endif %}
 
     {% if compile_log %}
         <h4>Compilation log</h4>

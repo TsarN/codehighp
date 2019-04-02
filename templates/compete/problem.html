@@ -3,6 +3,10 @@
 {% load crispy_forms_tags %}
 {% load compete %}
 
+{% block title %}
+    {{ problem.id }}. {{ problem.name }} - CodeHighp
+{% endblock %}
+
 {% block body %}
 <main class="fullwidth">
     <h2>{{ problem.id }}. {{ problem.name }}</h2>

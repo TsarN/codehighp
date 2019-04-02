@@ -28,7 +28,7 @@ def gen_test(gen, input_path, params):
 
 def run_test(exe, gen, prob_id, prob_conf, group, n):
     solution = os.path.join(settings.PROBLEM_DIR, prob_id, 'bin', 'solve')
-    runner = os.path.join(settings.DATA_DIR, prob_conf['flavor'], 'bin', 'runner')
+    runner = os.path.join(settings.BASE_DIR, 'native', prob_conf['flavor'], 'bin', 'runner')
     params = prob_conf['groups'][group]['vars'].copy()
     params['RAND_SEED'] = hash("{}_{}_{}".format(prob_id, group, n)) % (2 ** 30)
 
