@@ -8,7 +8,6 @@ import subprocess
 
 from django.conf import settings
 
-
 VERDICTS = {
     'OK': 'OK',
     'RE': 'Runtime error',

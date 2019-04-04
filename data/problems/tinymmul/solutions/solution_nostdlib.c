@@ -1,5 +1,4 @@
 #pragma GCC optimize("Os")
-#pragma GCC link("lto")
 
 #include <stdint.h>
 #include <stdio.h>
