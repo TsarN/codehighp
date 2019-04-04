@@ -3,26 +3,26 @@ gcc:
     flavor: "native"
     suffix: ".c"
     obj: "wrapper.o"
-    compile: ["/usr/bin/gcc", "[src]", "[obj]", "-std=c11", "-static", "-g0", "-O2", "-o", "[exe]"]
+    compile: ["/usr/bin/gcc", "-Dmain=_SolutionMain", "[src]", "[obj]", "-std=c11", "-static", "-g0", "-O2", "-o", "[exe]"]
 
 g++:
     name: "GNU C++17 8.2.1"
     flavor: "native"
     suffix: ".cpp"
     obj: "wrapper.o"
-    compile: ["/usr/bin/g++", "[src]", "[obj]", "-std=c++17", "-static", "-g0", "-O2", "-o", "[exe]"]
+    compile: ["/usr/bin/g++", "-Dmain=_SolutionMain", "[src]", "[obj]", "-std=c++17", "-static", "-g0", "-O2", "-o", "[exe]"]
 
 gcc-nostdlib:
     name: "GNU C11 8.2.1 (nostdlib)"
     flavor: "native"
     suffix: ".c"
     obj: "wrapper_nostdlib.a"
-    compile: ["/usr/bin/gcc", "[src]", "[obj]", "-std=c11", "-nostdlib", "-g0", "-O2", "-o", "[exe]"]
+    compile: ["/usr/bin/gcc", "-Dmain=_SolutionMain", "[src]", "[obj]", "-std=c11", "-nostdlib", "-g0", "-O2", "-o", "[exe]"]
 
 g++-nostdlib:
     name: "GNU C++17 8.2.1 (nostdlib)"
     flavor: "native"
     suffix: ".cpp"
     obj: "wrapper_nostdlib.a"
-    compile: ["/usr/bin/g++", "[src]", "[obj]", "-std=c++17", "-nostdlib", "-g0", "-O2", "-o", "[exe]"]
+    compile: ["/usr/bin/g++", "-Dmain=_SolutionMain", "[src]", "[obj]", "-std=c++17", "-nostdlib", "-g0", "-O2", "-o", "[exe]"]
 

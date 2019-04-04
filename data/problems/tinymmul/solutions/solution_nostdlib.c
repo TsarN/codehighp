@@ -1,4 +1,5 @@
 #pragma GCC optimize("Os")
+#define _GNU_SOURCE
 
 #include <stdint.h>
 #include <stdio.h>
@@ -8,7 +9,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-void solve()
+int main()
 {
     unsigned int n;
     syscall(SYS_read, 0, &n, sizeof(n));
@@ -27,4 +28,5 @@ void solve()
             syscall(SYS_write, 1, &c, sizeof(unsigned int));
         }
     }
+    return 0;
 }

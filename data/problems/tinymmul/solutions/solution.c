@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
-void solve()
+int main()
 {
     unsigned int n;
     read(0, &n, sizeof(n));
@@ -26,4 +26,5 @@ void solve()
             write(1, &c, sizeof(unsigned int));
         }
     }
+    return 0;
 }

@@ -11,7 +11,7 @@
 #include <linux/seccomp.h>
 #include <linux/filter.h>
 
-void solve();
+int _SolutionMain();
 
 static const struct sock_filter strict_filter[] = {
     BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof (struct seccomp_data, nr))),
@@ -76,9 +76,9 @@ int main(int argc, char **argv)
         return 64;
     }
 
-    solve();
+    int ret = _SolutionMain();
 
     fclose(stdout);
 
-    return 0;
+    return ret;
 }

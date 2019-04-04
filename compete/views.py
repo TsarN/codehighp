@@ -103,6 +103,11 @@ class RunView(SingleObjectMixin, UserPassesTestMixin, TemplateView):
             tests.append(dict(tests=[], score=glog[b'score'] / Run.SCORE_DIVISOR))
             while test in glog:
                 d = dict({k.decode(): v for k, v in glog[test].items()})
+                for field in ('input', 'output', 'answer'):
+                    if field not in d:
+                        d[field] = '[too long]'
+                    elif not d[field]:
+                        d[field] = '[none]'
                 d['verdict'] = VERDICTS[d['verdict'].decode()]
                 tests[group]['tests'].append(d)
                 test += 1

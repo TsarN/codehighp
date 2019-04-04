@@ -9,7 +9,7 @@
 #include <linux/seccomp.h>
 #include <linux/filter.h>
 
-void solve();
+int _SolutionMain();
 
 static long long atoll(const char *s) {
     const char *c = s;
@@ -85,9 +85,9 @@ int main(int argc, char **argv)
         return 64;
     }
 
-    solve();
+    int ret = _SolutionMain();
 
     syscall(SYS_close, 1);
 
-    return 0;
+    return ret;
 }
