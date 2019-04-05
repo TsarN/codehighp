@@ -12,11 +12,11 @@ class CustomUserCreationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(CustomUserCreationForm, self).__init__(*args, **kwargs)
-        self.fields['email'].required = True
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Sign up'))
         for fieldname in ['username', 'password1', 'password2', 'email']:
-            self.fields[fieldname].help_text = None
+            if fieldname in self.fields:
+                self.fields[fieldname].help_text = None
 
 
 class CustomUserChangeForm(UserChangeForm):

@@ -56,7 +56,11 @@ th {
     border-radius: 3px;
 }
 
-a.user-link {
+a.admin-link {
     font-weight: bold;
     color: black;
+}
+
+a.user-link {
+    font-weight: bold;
 }

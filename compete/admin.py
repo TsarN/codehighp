@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 
-from compete.models import Problem, Run
+from compete.models import Problem, Run, Contest, ContestRegistration
 from compete.tasks import do_invoke_run
 
 admin.site.register(Problem)
@@ -27,3 +27,5 @@ class RunAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Run, RunAdmin)
+admin.site.register(Contest)
+admin.site.register(ContestRegistration)

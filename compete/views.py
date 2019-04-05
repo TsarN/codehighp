@@ -8,7 +8,15 @@ from django.views.generic.detail import SingleObjectMixin
 
 from compete.forms import RunSubmitForm
 from compete.invoke import VERDICTS
-from compete.models import Problem, Run
+from compete.models import Problem, Run, Contest
+
+
+class ContestListView(ListView):
+    model = Contest
+    template_name = 'compete/contest_list.html'
+
+    def get_queryset(self):
+        return Contest.objects.prefetch_related('authors')
 
 
 class ProblemListView(ListView):

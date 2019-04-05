@@ -9,6 +9,41 @@ import msgpack
 from users.models import CustomUser
 
 
+class Contest(models.Model):
+    KINDS = (
+        ('CT', 'Classical contest'),
+        ('TR', 'Training contest')
+    )
+
+    CLASSICAL = 'CT'
+    TRAINING = 'TR'
+
+    name = models.CharField(max_length=255)
+    kind = models.CharField(max_length=2, choices=KINDS)
+    start_date = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    authors = models.ManyToManyField(CustomUser, related_name='authored_contests')
+    participants = models.ManyToManyField(CustomUser, through='ContestRegistration', related_name='participating')
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "<Contest id=%d name=%r>" % (self.id, self.name)
+
+    def timer(self):
+        return '''
+        <span class="timer" data-timer="{}"></span>
+'''.format(1e5)
+
+
+class ContestRegistration(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
+    date = models.DateTimeField()
+    official = models.BooleanField(default=True)
+
+
 class Problem(models.Model):
     LIMITS = (
         ('real_time', 'Max time per test: %.1f sec', 10**-3),
@@ -22,12 +57,13 @@ class Problem(models.Model):
     short_name = models.CharField(max_length=16)
     internal_name = models.CharField(max_length=255)
     statement = models.TextField()
+    contest = models.ForeignKey(Contest, null=True, default=None, on_delete=models.SET_NULL)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)
 
     def __repr__(self):
-        return "<Problem id=%d name=%s>" % (self.id, self.name)
+        return "<Problem id=%d name=%r>" % (self.id, self.name)
 
     @property
     def config(self):
@@ -61,6 +97,12 @@ class Run(models.Model):
         ('SV', 'Security violation')
     )
 
+    LEGIT = (
+        ('CS', 'Submitted during contest'),
+        ('US', 'Submitted during upsolving'),
+        ('VC', 'Virtual contest submission')
+    )
+
     UNKNOWN = 'UK'
     IN_QUEUE = 'IQ'
     RUNNING = 'RG'
@@ -69,6 +111,10 @@ class Run(models.Model):
     IGNORED = 'IG'
     INTERNAL_ERROR = 'IE'
     SECURITY_VIOLATION = 'SV'
+
+    DURING_CONTEST = 'CS'
+    DURING_UPSOLVING = 'US'
+    VIRTUAL = 'VC'
 
     SCORE_DIVISOR = 1000
 
@@ -80,6 +126,7 @@ class Run(models.Model):
     memory_used = models.PositiveIntegerField(help_text="in kilobytes", default=0)
     score = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True, blank=True)
+    legit = models.CharField(max_length=2, choices=LEGIT, default=DURING_UPSOLVING)
 
     def __str__(self):
         return "Run #{}".format(self.id)

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Contests - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+<h2>Contests</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Authors</th>
+            <th>Starts</th>
+            <th>Duration</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for contest in contest_list %}
+        <tr>
+            <td>{{ contest.name }}</td>
+            <td>
+                {% for author in contest.authors.all %}
+                    {{ author.html_link }}<br />
+                {% endfor %}
+            </td>
+            <td>{{ contest.start_date }}</td>
+            <td>{{ contest.duration }}</td>
+            <td>{{ contest.timer|safe }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</main>
+{% endblock %}
