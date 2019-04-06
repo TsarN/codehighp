@@ -27,6 +27,8 @@ Your solution's entry point is not named `main`.
 For technical reasons it's actually `_SolutionMain`.
 It's substituted using C preprocessor, so don't be
 afraid if you see compilation error in `_SolutionMain`.
+Also, if you're writing C++ code, you should mark your
+`main` function as `extern "C"`.
 
 Following flags are used to compile C/C++ code:
 `-g0 -O2 -static`.
@@ -38,6 +40,9 @@ null pointer returned from `malloc()` for example.
 
 ## Example solution for A+B
 
+<div class="row">
+<div class="col-sm-6">
+<h4>C</h4>
 <pre>
 #include &lt;stdio.h&gt;
 
@@ -51,6 +56,28 @@ int main()
     return 0;
 }
 </pre>
+</div>
+
+<div class="col-sm-6">
+<h4>C++</h4>
+<pre>
+#include &lt;cstdio&gt;
+
+using namespace std;
+
+extern "C"
+int main()
+{
+    int a, b;
+    fread(&a, sizeof(a), 1, stdin);
+    fread(&b, sizeof(b), 1, stdin);
+    int c = a + b;
+    fwrite(&c, sizeof(c), 1, stdout);
+    return 0;
+}
+</pre>
+</div>
+</div>
 
 ## nostdlib mode
 
