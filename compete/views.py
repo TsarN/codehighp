@@ -2,6 +2,7 @@ import base64
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -56,9 +57,45 @@ class ContestRegistrationView(LoginRequiredMixin, FormView):
         return redirect(reverse('contest_list'))
 
 
+class ContestView(TemplateView):
+    template_name = 'compete/contest.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ContestView, self).get_context_data(**kwargs)
+        contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id)
+        if not reg.exists():
+            raise PermissionDenied
+        context['contest'] = contest
+        context['registration'] = reg[0]
+        return context
+
+
 class ProblemListView(ListView):
     model = Problem
     template_name = 'compete/problem_list.html'
+
+
+class ContestRunsView(LoginRequiredMixin, ListView):
+    model = Run
+    template_name = 'compete/contest_runs.html'
+    paginate_by = settings.RUNS_ON_PROBLEM_PAGE
+
+    def get_context_data(self, **kwargs):
+        context = super(ContestRunsView, self).get_context_data(**kwargs)
+        contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        context['contest'] = contest
+        reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id)
+        if reg.exists():
+            context['registration'] = reg[0]
+        return context
+
+    def get_queryset(self):
+        queryset = Run.objects.filter(
+            problem__contest_id=self.kwargs.get('pk'), user=self.request.user)\
+            .order_by('-id')\
+            .select_related('user', 'problem')
+        return queryset
 
 
 class ProblemRunsView(LoginRequiredMixin, ListView):
@@ -88,11 +125,17 @@ class ProblemView(FormView):
         context = super(FormView, self).get_context_data(**kwargs)
         problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
         context['problem'] = problem
+        if problem.contest_id:
+            context['contest'] = problem.contest
         if self.request.user.is_authenticated:
-            runs = Run.objects.filter(user=self.request.user, problem=problem) \
+            runs = Run.objects.filter(user_id=self.request.user.id, problem=problem) \
                                   .order_by('-id').select_related('user', 'problem')[:settings.RUNS_ON_PROBLEM_PAGE]
             context['runs_truncated'] = (len(runs) == settings.RUNS_ON_PROBLEM_PAGE)
             context['runs'] = runs
+            if problem.contest_id:
+                reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id)
+                if reg.exists():
+                    context['registration'] = reg[0]
         return context
     
     def get_initial(self):

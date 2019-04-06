@@ -1,0 +1,39 @@
+{% if registration %}
+<h2>{{ contest.name }}</h2>
+<div class="row">
+    <div class="card">
+        {{ contest.card_timer|safe }}
+    </div>
+    <div class="card">
+        <h3>Your score</h3>
+        <p>
+            {{ registration.score1 }}
+            <small>
+                / {{ registration.score2 }}
+            </small>
+        </p>
+    </div>
+    <div class="card">
+        <ul>
+            <li>
+                {% if request.resolver_match.url_name == 'contest' %}
+                    <b>Problems</b>
+                {% else %}
+                    <a href="{% url 'contest' contest.id %}">Problems</a>
+                {% endif %}
+            </li>
+            <li>
+                <a href="#">Scoreboard</a>
+            </li>
+            <li>
+                {% if request.resolver_match.url_name == 'contest_runs' %}
+                    <b>My runs</b>
+                {% else %}
+                    <a href="{% url 'contest_runs' contest.id %}">My runs</a>
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+</div>
+<hr />
+{% endif %}

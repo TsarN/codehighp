@@ -26,7 +26,7 @@
                 {% if contest.registration %}
                     <br />Registered.
                     {% if contest.status != contest.NOT_STARTED %}
-                        <a href="#">Enter</a>
+                        <a href="{% url 'contest' contest.id %}">Enter</a>
                     {% endif %}
                 {% elif contest.registration_open %}
                     <br /><a href="{% url 'contest_register' contest.id %}">Register</a>

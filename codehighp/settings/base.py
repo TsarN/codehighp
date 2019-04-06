@@ -122,4 +122,4 @@ with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
     COMPILERS = yaml.safe_load(f)
 COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
 
-RUNS_ON_PROBLEM_PAGE = 15
+RUNS_ON_PROBLEM_PAGE = 50

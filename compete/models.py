@@ -1,6 +1,7 @@
 import os.path
 import gzip
 
+import markdown2
 from django.db import models
 from django.conf import settings
 import yaml
@@ -67,12 +68,23 @@ class Contest(models.Model):
                 .format(round(remaining.total_seconds()))
         return status
 
+    def card_timer(self):
+        status, remaining = self.get_timings()
+        status = dict(Contest.STATUS)[status]
+        status = '<h3>{}</h3>'.format(status)
+        if remaining:
+            status += '<p class="timer" data-timer="{}"></p>'\
+                .format(round(remaining.total_seconds()))
+        return status
+
 
 class ContestRegistration(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True, blank=True)
     official = models.BooleanField(default=True)
+    score1 = models.IntegerField(default=0)
+    score2 = models.IntegerField(default=0)
 
 
 class Problem(models.Model):
@@ -87,8 +99,8 @@ class Problem(models.Model):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=16)
     internal_name = models.CharField(max_length=255)
-    statement = models.TextField()
     contest = models.ForeignKey(Contest, null=True, blank=True, default=None, on_delete=models.SET_NULL)
+    score = models.IntegerField(default=0)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)
@@ -97,12 +109,31 @@ class Problem(models.Model):
         return "<Problem id=%d name=%r>" % (self.id, self.name)
 
     @property
+    def full_name(self):
+        if self.contest_id:
+            return "{}. {}".format(self.short_name, self.name)
+        else:
+            return "{}. {}".format(self.pk, self.name)
+
+    @property
     def config(self):
         if hasattr(self, "_config"):
             return self._config
         with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, "problem.yaml")) as f:
             self._config = yaml.safe_load(f)
         return self._config
+
+    @property
+    def statement(self):
+        if hasattr(self, "_statement"):
+            return self._statement
+        filename = self.config.get('statement')
+        if filename:
+            with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, filename)) as f:
+                self._statement = markdown2.markdown(f.read())
+        else:
+            self._statement = ""
+        return self._statement
 
     @property
     def humanized_limits(self):

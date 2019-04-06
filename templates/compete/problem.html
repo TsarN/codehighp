@@ -4,15 +4,16 @@
 {% load compete %}
 
 {% block title %}
-    {{ problem.id }}. {{ problem.name }} - CodeHighp
+    {{ problem.full_name }} - CodeHighp
 {% endblock %}
 
 {% block body %}
 <main class="fullwidth">
-    <h2>{{ problem.id }}. {{ problem.name }}</h2>
+{% contest_info %}
+    <h2>{{ problem.full_name }}</h2>
 <pre>{{ problem.humanized_limits|safe }}</pre>
 
-{{ problem.statement|markdown }}
+{{ problem.statement|safe }}
 <hr />
 
 {% if user.is_authenticated %}

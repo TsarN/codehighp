@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load compete %}
+
+{% block title %}
+    {{ contest.name }} - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+{% contest_info %}
+<h3>Problems</h3>
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th class="fullwidth">Name</th>
+        <th>Score</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for problem in contest.problem_set.all %}
+            <tr>
+                <td>
+                    <a href="{% url 'problem' problem.id %}">{{ problem.short_name }}</a>
+                </td>
+                <td class="fullwidth">
+                    <a href="{% url 'problem' problem.id %}">{{ problem.name }}</a>
+                </td>
+                <td>
+                    {{ problem.score }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</main>
+{% endblock %}

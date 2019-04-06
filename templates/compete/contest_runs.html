@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load compete %}
+{% load paginate %}
+
+{% block title %}
+    Runs in "{{ contest.name }}" - CodeHighp
+{% endblock %}
+
+{% block body %}
+    <main class="fullwidth">
+        {% contest_info %}
+        <h2>
+            Your runs in {{ contest.name }}
+        </h2>
+        {% run_list run_list %}
+        {% paginate %}
+    </main>
+{% endblock %}

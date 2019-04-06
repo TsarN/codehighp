@@ -10,6 +10,7 @@ limits:
 check: "exact"
 gen: "gen.c"
 solve: "solve.c"
+statement: "statement.md"
 
 groups:
     0:

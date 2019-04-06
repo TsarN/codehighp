@@ -8,6 +8,7 @@ limits:
     source_size: 65536
 
 check: "exact"
+statement: "statement.md"
 
 groups:
     0:
