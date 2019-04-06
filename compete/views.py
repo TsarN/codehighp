@@ -2,21 +2,58 @@ import base64
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import Count
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.views.generic import ListView, FormView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 
-from compete.forms import RunSubmitForm
+from compete.forms import RunSubmitForm, ContestRegistrationForm
 from compete.invoke import VERDICTS
-from compete.models import Problem, Run, Contest
+from compete.models import Problem, Run, Contest, ContestRegistration
 
 
 class ContestListView(ListView):
     model = Contest
     template_name = 'compete/contest_list.html'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(ContestListView, self).get_context_data(object_list=object_list, **kwargs)
+        if self.request.user.is_authenticated:
+            regs = ContestRegistration.objects.filter(user_id=self.request.user.id)
+            dregs = {i.contest_id: i for i in regs}
+            for contest in context['contest_list']:
+                if contest.id in dregs:
+                    contest.registration = dregs[contest.id]
+        return context
+
     def get_queryset(self):
-        return Contest.objects.prefetch_related('authors')
+        return Contest.objects\
+            .prefetch_related('authors')\
+            .annotate(Count('participants', distinct=True))
+
+
+class ContestRegistrationView(LoginRequiredMixin, FormView):
+    template_name = 'compete/contest_registration.html'
+    form_class = ContestRegistrationForm
+
+    def get_context_data(self, **kwargs):
+        context = super(ContestRegistrationView, self).get_context_data(**kwargs)
+        contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        if ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id).exists():
+            raise Http404()
+        context['contest'] = contest
+        return context
+
+    def get_initial(self):
+        initial = super(ContestRegistrationView, self).get_initial()
+        initial['contest_id'] = self.kwargs.get('pk')
+        return initial
+
+    def form_valid(self, form):
+        form.register(self.request.user)
+        return redirect(reverse('contest_list'))
 
 
 class ProblemListView(ListView):

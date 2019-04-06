@@ -15,12 +15,23 @@
             <th>Starts</th>
             <th>Duration</th>
             <th></th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
     {% for contest in contest_list %}
         <tr>
-            <td>{{ contest.name }}</td>
+            <td>
+                <b>{{ contest.name }}</b>
+                {% if contest.registration %}
+                    <br />Registered.
+                    {% if contest.status != contest.NOT_STARTED %}
+                        <a href="#">Enter</a>
+                    {% endif %}
+                {% elif contest.registration_open %}
+                    <br /><a href="{% url 'contest_register' contest.id %}">Register</a>
+                {% endif %}
+            </td>
             <td>
                 {% for author in contest.authors.all %}
                     {{ author.html_link }}<br />
@@ -29,6 +40,10 @@
             <td>{{ contest.start_date }}</td>
             <td>{{ contest.duration }}</td>
             <td>{{ contest.timer|safe }}</td>
+            <td>
+                <span class="icon-user"></span>
+                {{ contest.participants__count }}
+            </td>
         </tr>
     {% endfor %}
     </tbody>

@@ -5,6 +5,7 @@ from django.db import models
 from django.conf import settings
 import yaml
 import msgpack
+from django.utils import timezone
 
 from users.models import CustomUser
 
@@ -15,8 +16,18 @@ class Contest(models.Model):
         ('TR', 'Training contest')
     )
 
+    STATUS = (
+        ('NS', 'Not started'),
+        ('RN', 'Running'),
+        ('FN', 'Finished')
+    )
+
     CLASSICAL = 'CT'
     TRAINING = 'TR'
+
+    NOT_STARTED = 'NS'
+    RUNNING = 'RN'
+    FINISHED = 'FN'
 
     name = models.CharField(max_length=255)
     kind = models.CharField(max_length=2, choices=KINDS)
@@ -31,16 +42,36 @@ class Contest(models.Model):
     def __repr__(self):
         return "<Contest id=%d name=%r>" % (self.id, self.name)
 
+    def get_timings(self):
+        now = timezone.now()
+        if now < self.start_date:
+            return Contest.NOT_STARTED, self.start_date - now
+        if now < self.start_date + self.duration:
+            return Contest.RUNNING, self.start_date + self.duration - now
+        return Contest.FINISHED, None
+
+    @property
+    def registration_open(self):
+        return self.status != Contest.FINISHED
+
+    @property
+    def status(self):
+        return self.get_timings()[0]
+
     def timer(self):
-        return '''
-        <span class="timer" data-timer="{}"></span>
-'''.format(1e5)
+        status, remaining = self.get_timings()
+        status = dict(Contest.STATUS)[status]
+        status = '<b>{}</b>'.format(status)
+        if remaining:
+            status += '<br /><span class="timer" data-timer="{}"></span>'\
+                .format(round(remaining.total_seconds()))
+        return status
 
 
 class ContestRegistration(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True, blank=True)
     official = models.BooleanField(default=True)
 
 
@@ -57,7 +88,7 @@ class Problem(models.Model):
     short_name = models.CharField(max_length=16)
     internal_name = models.CharField(max_length=255)
     statement = models.TextField()
-    contest = models.ForeignKey(Contest, null=True, default=None, on_delete=models.SET_NULL)
+    contest = models.ForeignKey(Contest, null=True, blank=True, default=None, on_delete=models.SET_NULL)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)

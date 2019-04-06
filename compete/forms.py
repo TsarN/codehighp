@@ -4,7 +4,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from compete.models import Problem, Run
+from compete.models import Problem, Run, ContestRegistration, Contest
 from compete.tasks import do_invoke_run
 
 
@@ -36,6 +36,8 @@ class RunSubmitForm(forms.Form):
         return form_data
 
     def submit_run(self, user):
+        if not user.is_authenticated:
+            return
         form_data = self.cleaned_data
         prob_id = form_data['prob_id']
         lang_id = form_data['lang_id']
@@ -45,3 +47,26 @@ class RunSubmitForm(forms.Form):
             for chunk in form_data['src_file'].chunks():
                 f.write(chunk)
         do_invoke_run(run)
+
+
+class ContestRegistrationForm(forms.Form):
+    contest_id = forms.IntegerField(widget=forms.HiddenInput())
+    agree = forms.BooleanField(required=True, label='I have read and agree to these rules')
+
+    def __init__(self, *args, **kwargs):
+        super(ContestRegistrationForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Register'))
+
+    def clean_contest_id(self):
+        contest_id = self.cleaned_data['contest_id']
+        if not Contest.objects.filter(pk=contest_id).exists():
+            raise ValidationError("Contest does not exist")
+        return contest_id
+
+    def register(self, user):
+        if not user.is_authenticated:
+            return
+        form_data = self.cleaned_data
+        reg = ContestRegistration(user_id=user.id, contest_id=form_data['contest_id'], official=True)
+        reg.save()

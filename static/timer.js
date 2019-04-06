@@ -28,7 +28,7 @@
             if (days === 1) {
                 s = "1 day ";
             } else {
-                s = day.toString() + " days ";
+                s = days.toString() + " days ";
             }
         }
         s += padZero(hour) + ":" + padZero(min) + ":" + padZero(sec);
