@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load blog %}
+{% load crispy_forms_tags %}
+{% load markdown %}
+{% load mptt_tags %}
+{% load humanize %}
+
+{% block body %}
+<main class="fullwidth">
+{% post post %}
+
+<a id="comments"></a>
+<h3>Comments</h3>
+
+{% if user.is_authenticated %}
+<a href="#" id="new-comment-link" data-post="{{ post.id }}">New comment</a>
+<div id="base-comment-form" style="display: none">
+<form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="parent_id">
+    <input type="hidden" name="comment_id">
+    <textarea name="text" class="fullwidth" rows="10" required="" placeholder="Write something here..."></textarea>
+    <p>
+        Markdown and MathJax are supported.
+    </p>
+    <input type="submit" name="submit" value="Submit" class="btn btn-primary" />
+</form>
+</div>
+<div id="new-comment-form" class="comment-form" style="display: none"></div>
+{% endif %}
+
+{% recursetree comments %}
+    <div class="comment">
+        <p class="annotation">
+            {{ node.created_date|naturaltime }}
+            by {{ node.author.html_link }}
+
+            {% if user.is_authenticated %}
+                <a href="#" class="comment-reply-link" data-comment="{{ node.id }}">reply</a>
+                {% if node.author_id == user.id %}
+                    <a href="#" class="comment-edit-link" data-comment="{{ node.id }}" data-parent="{{ node.parent.id }}">edit</a>
+                {% endif %}
+            {% endif %}
+
+            <span class="right">
+                {% if user.is_authenticated %}
+                    <a href="#" class="upvote-button{% if node.voted > 0 %} active{% endif %}" data-post="{{ node.id }}">++</a>
+                    {% if node.rating > 0 %}
+                        <span class="vote-count">+{{ node.rating }}</span>
+                    {% elif post.rating == 0 %}
+                        <span class="vote-count">0</span>
+                    {% else %}
+                        <span class="negative-vote-count vote-count">{{ node.rating }}</span>
+                    {% endif %}
+                    <a href="#" class="downvote-button{% if node.voted < 0 %} active{% endif %}" data-post="{{ node.id }}">--</a>
+                {% else %}
+                    Rating: {{ node.rating }}
+                {% endif %}
+            </span>
+        </p>
+        {{ node.contents|markdown }}
+        {% if node.author_id == user.id %}
+        <div style="display: none" id="original-markdown-{{ node.id }}">{{ node.contents }}</div>
+        {% endif %}
+        <div style="display: none" id="comment-form-{{ node.id }}" class="comment-form"></div>
+        {% if not node.is_leaf_node %}
+            <div class="children">
+                {{ children }}
+            </div>
+        {% endif %}
+    </div>
+{% endrecursetree %}
+
+</main>
+{% endblock %}

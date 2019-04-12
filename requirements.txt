@@ -4,6 +4,8 @@ celery==4.3.0
 Django==2.2
 django-crispy-forms==1.7.2
 django-debug-toolbar==1.11
+django-js-asset==1.2.2
+django-mptt==0.9.1
 django-npm==1.0.0
 kombu==4.5.0
 markdown2==2.3.7

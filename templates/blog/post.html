@@ -1,0 +1,37 @@
+{% load humanize %}
+{% load markdown %}
+
+<h1><a style="text-decoration: none" href="{% url 'post' post.pk %}">{{ post.title }}</a></h1>
+<p>posted {{ post.created_date|naturaltime }} by {{ post.author.html_link }}</p>
+{% if short %}
+{{ post.cut_contents|markdown }}
+{% if post.has_cut %}
+<p>
+    <a href="{% url 'post' post.pk %}">Read more...</a>
+</p>
+{% endif %}
+{% else %}
+{{ post.full_contents|markdown }}
+{% endif %}
+<hr />
+<p>
+{% if user.is_authenticated %}
+<a href="#" class="upvote-button{% if post.voted > 0 %} active{% endif %}" data-post="{{ post.id }}">++</a>
+{% else %}
+<span class="vote-count">Rating: </span>
+{% endif %}
+{% if post.rating > 0 %}
+    <span class="vote-count">+{{ post.rating }}</span>
+{% elif post.rating == 0 %}
+    <span class="vote-count">0</span>
+{% else %}
+    <span class="negative-vote-count vote-count">{{ post.rating }}</span>
+{% endif %}
+{% if user.is_authenticated %}
+<a href="#" class="downvote-button{% if post.voted < 0 %} active{% endif %}" data-post="{{ post.id }}">--</a>
+{% endif %}
+{% if short %}
+&nbsp; |&nbsp; <a href="{% url 'post' post.pk %}#comments">comments</a>
+{% endif %}
+</p>
+<hr />

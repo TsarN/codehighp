@@ -30,10 +30,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'crispy_forms',
+    'mptt',
 
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
-    'compete.apps.CompeteConfig'
+    'compete.apps.CompeteConfig',
+    'blog.apps.BlogConfig'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'

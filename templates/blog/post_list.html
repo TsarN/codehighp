@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load blog %}
+
+{% block body %}
+<main class="fullwidth">
+{% for post in posts %}
+    {% post post True %}
+{% endfor %}
+</main>
+{% endblock %}

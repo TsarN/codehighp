@@ -6,6 +6,7 @@ from django.db import models
 from django.conf import settings
 import yaml
 import msgpack
+from django.db.models import Sum, F
 from django.db.transaction import atomic
 from django.utils import timezone
 
@@ -94,6 +95,9 @@ class Contest(models.Model):
 
 
 class ContestRegistration(models.Model):
+    class Meta:
+        unique_together = (('user', 'contest'),)
+
     STATUS = (
         ('OK', 'Registered'),
         ('PD', 'Registration pending'),
@@ -184,7 +188,7 @@ class Problem(models.Model):
         filename = self.config.get('statement')
         if filename:
             with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, filename)) as f:
-                self._statement = markdown2.markdown(f.read())
+                self._statement = markdown2.markdown(f.read(), safe_mode=True)
         else:
             self._statement = ""
         return self._statement
@@ -209,6 +213,33 @@ class UserProblemStatus(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
     score2 = models.IntegerField(default=0)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(UserProblemStatus, self).save(force_insert, force_update, using, update_fields)
+
+        with atomic():
+            if self.problem.contest.status != Contest.RUNNING:
+                return
+
+            reg = ContestRegistration.objects.filter(user_id=self.user_id, contest_id=self.problem.contest_id,
+                                                     status=ContestRegistration.REGISTERED)
+            if not reg.exists():
+                return
+
+            reg = reg[0]
+
+            res = UserProblemStatus.objects\
+                .filter(user_id=self.user_id, problem__contest_id=self.problem.contest_id)\
+                .aggregate(score=Sum(F('score')*F('problem__score')),
+                           score2=Sum(F('score2')*F('problem__score')))
+            score = round(res['score'] / Run.SCORE_DIVISOR)
+            score2 = round(res['score2'] / Run.SCORE_DIVISOR)
+
+            if (score, score2) > (reg.score, reg.score2):
+                reg.score = score
+                reg.score2 = score2
+                reg.save()
 
 
 class Run(models.Model):

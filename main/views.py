@@ -6,10 +6,6 @@ from django.http import Http404
 from django.views.generic import TemplateView
 
 
-class IndexView(TemplateView):
-    template_name = 'index.html'
-
-
 class PrivacyPolicyView(TemplateView):
     template_name = 'privacy.html'
 

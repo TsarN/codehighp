@@ -84,3 +84,52 @@ a.user-link {
 .card {
     min-height: 120px;
 }
+
+a.upvote-button,a.downvote-button {
+    text-decoration: none;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 20px;
+    padding: 8px;
+    color: #666;
+    outline: none;
+}
+
+a.upvote-button:hover {
+    color: #a00;
+}
+
+a.upvote-button.active {
+    color: #f00;
+}
+
+a.downvote-button:hover {
+    color: #00a;
+}
+
+a.downvote-button.active {
+    color: #00f;
+}
+
+.vote-count,.negative-vote-count {
+    text-decoration: none;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.negative-vote-count {
+    color: #666;
+}
+
+.annotation {
+    color: #444;
+    font-weight: lighter;
+}
+
+.children {
+    margin-left: 32px;
+}
+
+.comment {
+    border-left: 1px solid #888;
+}
