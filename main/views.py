@@ -10,6 +10,10 @@ class IndexView(TemplateView):
     template_name = 'index.html'
 
 
+class PrivacyPolicyView(TemplateView):
+    template_name = 'privacy.html'
+
+
 class HelpView(TemplateView):
     template_name = 'help.html'
 

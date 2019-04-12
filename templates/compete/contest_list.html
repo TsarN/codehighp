@@ -24,12 +24,12 @@
             <td>
                 <b>{{ contest.name }}</b>
                 {% if contest.registration %}
-                    <br />Registered.
-                    {% if contest.status != contest.NOT_STARTED %}
-                        <a href="{% url 'contest' contest.id %}">Enter</a>
-                    {% endif %}
+                    <br />{{ contest.registration.get_status_display }}.
                 {% elif contest.registration_open %}
                     <br /><a href="{% url 'contest_register' contest.id %}">Register</a>
+                {% endif %}
+                {% if contest.status != contest.NOT_STARTED %}
+                    <a href="{% url 'contest' contest.id %}">Enter</a>
                 {% endif %}
             </td>
             <td>
@@ -38,11 +38,11 @@
                 {% endfor %}
             </td>
             <td>{{ contest.start_date }}</td>
-            <td>{{ contest.duration }}</td>
+            <td>{{ contest.duration|default:"Infinite" }}</td>
             <td>{{ contest.timer|safe }}</td>
             <td>
                 <span class="icon-user"></span>
-                {{ contest.participants__count }}
+                {{ contest.num_participants }}
             </td>
         </tr>
     {% endfor %}

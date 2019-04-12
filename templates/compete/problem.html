@@ -17,8 +17,12 @@
 <hr />
 
 {% if user.is_authenticated %}
+{% if can_submit %}
     {% crispy form %}
     <hr />
+{% else %}
+    You need to register for the contest to submit solutions.
+{% endif %}
     {% if runs %}
         <h3>
             <a href="{% url 'problem_runs' problem.id %}">Your runs</a>
@@ -29,7 +33,8 @@
                 <a href="{% url 'problem_runs' problem.id %}">Show all runs</a>
             </em>
         {% endif %}
-    {% else %}
+    {% endif %}
+    {% if not runs and can_submit %}
         <em>You don't have any attempts on this problem.</em>
     {% endif %}
 {% else %}

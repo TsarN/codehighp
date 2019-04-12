@@ -118,6 +118,19 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 LOG_DIR = os.path.join(DATA_DIR, 'logs')
 PROBLEM_DIR = os.path.join(DATA_DIR, 'problems')
 
+CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
+CELERY_IGNORE_RESULT = True
+CELERY_ROUTES = {
+    'compete.tasks.invoke_run': {
+        'queue': 'invoker'
+    },
+    'compete.tasks.update_contest_status': {
+        'queue': 'delayed'
+    }
+}
+
 with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
     COMPILERS = yaml.safe_load(f)
 COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())

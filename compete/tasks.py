@@ -1,12 +1,12 @@
 import os
-import base64
 
 from celery import shared_task
 from django.conf import settings
+from django.db.transaction import atomic
 
 from compete.invoke import invoke
 from compete.compile import compile_native
-from compete.models import Run
+from compete.models import Run, Contest, Problem
 from util import get_tempfile_name
 
 
@@ -16,8 +16,6 @@ def invoke_run(run_id, prob_id, lang_id, src):
         run = Run.objects.get(pk=run_id)
     except Run.DoesNotExist:
         return
-
-    src = base64.b64decode(src)
 
     if lang_id not in settings.COMPILERS:
         run.status = Run.COMPILATION_ERROR
@@ -45,6 +43,7 @@ def invoke_run(run_id, prob_id, lang_id, src):
         stats = invoke(exe_path, prob_id)
         os.remove(exe_path)
         run.score = stats['score']
+        run.score2 = round(stats['score2'] * Run.SCORE_DIVISOR)
         run.cpu_used = stats['cpu']
         run.memory_used = stats['mem']
         run.status = Run.ACCEPTED
@@ -60,7 +59,6 @@ def do_invoke_run(run):
     lang_id = run.lang
     with open(run.src_path, 'rb') as f:
         src = f.read()
-    src = base64.b64encode(src).decode()
 
     run.status = Run.IN_QUEUE
     run.score = 0
@@ -70,3 +68,18 @@ def do_invoke_run(run):
     run.delete_log()
 
     invoke_run.delay(run.pk, prob_id, lang_id, src)
+
+
+@shared_task
+def update_contest_status(contest_id):
+    try:
+        contest = Contest.objects.get(pk=contest_id)
+    except Contest.DoesNotExist:
+        return
+
+    if contest.status == Contest.NOT_STARTED:
+        return
+
+    with atomic():
+        contest.problem_set.filter(visibility=Problem.AUTO_VISIBLE_EVERYONE).update(visibility=Problem.VISIBLE_EVERYONE)
+        contest.problem_set.filter(visibility=Problem.AUTO_VISIBLE_PARTICIPANTS).update(visibility=Problem.VISIBLE_PARTICIPANTS)

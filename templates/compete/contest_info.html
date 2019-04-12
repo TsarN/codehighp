@@ -1,18 +1,10 @@
-{% if registration %}
+{% if contest %}
 <h2>{{ contest.name }}</h2>
 <div class="row">
     <div class="card">
         {{ contest.card_timer|safe }}
     </div>
-    <div class="card">
-        <h3>Your score</h3>
-        <p>
-            {{ registration.score1 }}
-            <small>
-                / {{ registration.score2 }}
-            </small>
-        </p>
-    </div>
+
     <div class="card">
         <ul>
             <li>
@@ -25,6 +17,7 @@
             <li>
                 <a href="#">Scoreboard</a>
             </li>
+        {% if registration and registration.status == "OK" %}
             <li>
                 {% if request.resolver_match.url_name == 'contest_runs' %}
                     <b>My runs</b>
@@ -32,8 +25,31 @@
                     <a href="{% url 'contest_runs' contest.id %}">My runs</a>
                 {% endif %}
             </li>
+        {% endif %}
         </ul>
     </div>
+
+    {% if registration and registration.status == "OK" %}
+    <div class="card">
+        <h3>Your score</h3>
+        <p>
+            {{ registration.score }}
+            <small>
+                / {{ registration.score2 }}
+            </small>
+        </p>
+    </div>
+    {% else %}
+    <div class="card warning">
+        <h3>Observer mode</h3>
+        <p>
+            Only registered participants can submit solutions.
+            {% if not registration %}
+                <a href="{% url 'contest_register' contest.id %}">Register?</a>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
 </div>
 <hr />
 {% endif %}

@@ -64,3 +64,23 @@ a.admin-link {
 a.user-link {
     font-weight: bold;
 }
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.failed-attempt {
+    background-color: #faa;
+}
+
+.successful-attempt {
+    background-color: #cfc;
+}
+
+.partial-attempt {
+    background-color: #fda;
+}
+
+.card {
+    min-height: 120px;
+}

@@ -6,6 +6,7 @@ from django.db import models
 from django.conf import settings
 import yaml
 import msgpack
+from django.db.transaction import atomic
 from django.utils import timezone
 
 from users.models import CustomUser
@@ -43,10 +44,24 @@ class Contest(models.Model):
     def __repr__(self):
         return "<Contest id=%d name=%r>" % (self.id, self.name)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        from compete.tasks import update_contest_status
+        super(Contest, self).save(force_insert=force_insert, force_update=force_update,
+                                  using=using, update_fields=update_fields)
+        if self.status == Contest.NOT_STARTED:
+            update_contest_status.apply_async((self.id,), eta=self.start_date)
+        else:
+            update_contest_status(self.id)
+
     def get_timings(self):
         now = timezone.now()
+        if not self.start_date:
+            return Contest.RUNNING, None
         if now < self.start_date:
             return Contest.NOT_STARTED, self.start_date - now
+        if not self.duration:
+            return Contest.RUNNING, None
         if now < self.start_date + self.duration:
             return Contest.RUNNING, self.start_date + self.duration - now
         return Contest.FINISHED, None
@@ -79,12 +94,26 @@ class Contest(models.Model):
 
 
 class ContestRegistration(models.Model):
+    STATUS = (
+        ('OK', 'Registered'),
+        ('PD', 'Registration pending'),
+        ('RJ', 'Registration rejected')
+    )
+
+    REGISTERED = 'OK'
+    PENDING = 'PD'
+    REJECTED = 'RJ'
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
+    status = models.CharField(max_length=2, default=REGISTERED, choices=STATUS, db_index=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
     official = models.BooleanField(default=True)
-    score1 = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)
     score2 = models.IntegerField(default=0)
+
+    def __str__(self):
+        return "Registration of user #%d for contest #%d" % (self.user_id, self.contest_id)
 
 
 class Problem(models.Model):
@@ -96,17 +125,42 @@ class Problem(models.Model):
         ('threads', 'Max threads allowed: %d', 1),
     )
 
+    VISIBILITY = (
+        ('AA', 'Make visible for everyone when contest starts'),
+        ('AR', 'Make visible for contest participants when contest starts'),
+        ('VA', 'Visible for everyone'),
+        ('VR', 'Visible for contest participants'),
+        ('IN', 'Invisible'),
+    )
+
+    AUTO_VISIBLE_EVERYONE = 'AA'
+    AUTO_VISIBLE_PARTICIPANTS = 'AR'
+    VISIBLE_EVERYONE = 'VA'
+    VISIBLE_PARTICIPANTS = 'VR'
+    INVISIBLE = 'IN'
+
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=16)
     internal_name = models.CharField(max_length=255)
     contest = models.ForeignKey(Contest, null=True, blank=True, default=None, on_delete=models.SET_NULL)
     score = models.IntegerField(default=0)
+    visibility = models.CharField(max_length=2, choices=VISIBILITY, default=AUTO_VISIBLE_EVERYONE)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)
 
     def __repr__(self):
         return "<Problem id=%d name=%r>" % (self.id, self.name)
+
+    def is_visible(self, user_id):
+        if self.visibility in [Problem.AUTO_VISIBLE_EVERYONE, Problem.AUTO_VISIBLE_PARTICIPANTS, Problem.INVISIBLE]:
+            return False
+        if self.visibility in [Problem.VISIBLE_EVERYONE]:
+            return True
+
+        return ContestRegistration.objects.filter(contest_id=self.contest_id,
+                                                  user_id=user_id,
+                                                  status=ContestRegistration.REGISTERED).exists()
 
     @property
     def full_name(self):
@@ -145,6 +199,16 @@ class Problem(models.Model):
             value *= factor
             result += msg % value + "\n"
         return result
+
+
+class UserProblemStatus(models.Model):
+    class Meta:
+        unique_together = (('problem', 'user'),)
+
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    score2 = models.IntegerField(default=0)
 
 
 class Run(models.Model):
@@ -186,8 +250,9 @@ class Run(models.Model):
     status = models.CharField(max_length=2, choices=STATUS, default=UNKNOWN)
     cpu_used = models.PositiveIntegerField(help_text="in milliseconds", default=0)
     memory_used = models.PositiveIntegerField(help_text="in kilobytes", default=0)
-    score = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True, blank=True)
+    score = models.IntegerField(default=0)
+    score2 = models.IntegerField(default=0)
     legit = models.CharField(max_length=2, choices=LEGIT, default=DURING_UPSOLVING)
 
     def __str__(self):
@@ -195,6 +260,16 @@ class Run(models.Model):
 
     def __repr__(self):
         return "<Run id=%d>" % self.id
+
+    @atomic
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        status, created = UserProblemStatus.objects.get_or_create(problem_id=self.problem_id, user_id=self.user_id)
+        if created or (status.score, status.score2) < (self.score, self.score2):
+            status.score = self.score
+            status.score2 = self.score2
+            status.save()
+        super(Run, self).save(force_insert, force_update, using, update_fields)
 
     @property
     def src_path(self):
@@ -206,8 +281,10 @@ class Run(models.Model):
         return os.path.join(settings.LOG_DIR, '%06d.gz' % self.id)
 
     @property
-    def normalized_score(self):
-        return self.score / 1000
+    def html_score(self):
+        score = self.score / Run.SCORE_DIVISOR
+        score2 = self.score2 / Run.SCORE_DIVISOR
+        return "%.3f <small>/ %.3f</small>" % (score, score2)
 
     def accessible_by(self, user):
         if user.is_superuser:

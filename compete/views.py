@@ -3,7 +3,7 @@ import base64
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -12,7 +12,7 @@ from django.views.generic.detail import SingleObjectMixin
 
 from compete.forms import RunSubmitForm, ContestRegistrationForm
 from compete.invoke import VERDICTS
-from compete.models import Problem, Run, Contest, ContestRegistration
+from compete.models import Problem, Run, Contest, ContestRegistration, UserProblemStatus
 
 
 class ContestListView(ListView):
@@ -32,7 +32,10 @@ class ContestListView(ListView):
     def get_queryset(self):
         return Contest.objects\
             .prefetch_related('authors')\
-            .annotate(Count('participants', distinct=True))
+            .annotate(num_participants=Count('participants', filter=Q(
+                            contestregistration__status=ContestRegistration.REGISTERED),
+                            distinct=True))\
+            .order_by('-id')
 
 
 class ContestRegistrationView(LoginRequiredMixin, FormView):
@@ -64,16 +67,44 @@ class ContestView(TemplateView):
         context = super(ContestView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id)
-        if not reg.exists():
+        if contest.status == Contest.NOT_STARTED:
             raise PermissionDenied
+
+        problems = contest.problem_set.all()
+        problem_statuses = UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all()
+        problem_statuses = {i.problem_id: i for i in problem_statuses}
+        for prob in problems:
+            status = problem_statuses.get(prob.id)
+            if status:
+                prob.attempted = True
+                prob.user_score = round(prob.score * status.score / Run.SCORE_DIVISOR)
+                prob.user_score2 = round(prob.score * status.score2 / Run.SCORE_DIVISOR)
+
+                if prob.user_score <= 0:
+                    prob.css_class = "failed-attempt"
+                elif prob.user_score >= prob.score:
+                    prob.css_class = "successful-attempt"
+                else:
+                    prob.css_class = "partial-attempt"
+            else:
+                prob.css_class = ""
+
         context['contest'] = contest
-        context['registration'] = reg[0]
+        context['problems'] = problems
+        if reg.exists():
+            context['registration'] = reg[0]
         return context
 
 
 class ProblemListView(ListView):
     model = Problem
     template_name = 'compete/problem_list.html'
+
+    def get_queryset(self):
+        queryset = Problem.objects.filter(
+            visibility=Problem.VISIBLE_EVERYONE
+        ).order_by('-id')
+        return queryset
 
 
 class ContestRunsView(LoginRequiredMixin, ListView):
@@ -85,9 +116,11 @@ class ContestRunsView(LoginRequiredMixin, ListView):
         context = super(ContestRunsView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         context['contest'] = contest
-        reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id)
-        if reg.exists():
-            context['registration'] = reg[0]
+        reg = ContestRegistration.objects.filter(user_id=self.request.user.id,
+                                                 contest_id=contest.id, status=ContestRegistration.REGISTERED)
+        if not reg.exists() or contest.status == Contest.NOT_STARTED:
+            raise PermissionDenied
+        context['registration'] = reg[0]
         return context
 
     def get_queryset(self):
@@ -106,6 +139,8 @@ class ProblemRunsView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super(ProblemRunsView, self).get_context_data(**kwargs)
         problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        if not problem.is_visible(self.request.user.id):
+            raise PermissionDenied
         context['problem'] = problem
         return context
 
@@ -121,10 +156,27 @@ class ProblemView(FormView):
     template_name = 'compete/problem.html'
     form_class = RunSubmitForm
 
+    def post(self, request, *args, **kwargs):
+        problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        if not problem.is_visible(self.request.user):
+            raise PermissionDenied
+        can_submit = False
+        if problem.contest_id:
+            reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id, status=ContestRegistration.REGISTERED)
+            if reg.exists():
+                can_submit = True
+        else:
+            can_submit = True
+        if not can_submit:
+            raise PermissionDenied
+        return super(ProblemView, self).post(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(FormView, self).get_context_data(**kwargs)
         problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
         context['problem'] = problem
+        if not problem.is_visible(self.request.user.id):
+            raise PermissionDenied
         if problem.contest_id:
             context['contest'] = problem.contest
         if self.request.user.is_authenticated:
@@ -136,6 +188,10 @@ class ProblemView(FormView):
                 reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id)
                 if reg.exists():
                     context['registration'] = reg[0]
+                    if reg[0].status == ContestRegistration.REGISTERED:
+                        context['can_submit'] = True
+            else:
+                context['can_submit'] = True
         return context
     
     def get_initial(self):

@@ -1,3 +1,4 @@
+import hashlib
 import os
 import tempfile
 import filecmp
@@ -25,11 +26,18 @@ def gen_test(gen, input_path, params):
         subprocess.run([gen], stdout=f, env={k: str(v) for k, v in params.items()})
 
 
+def get_seed(s):
+    h = hashlib.sha256()
+    h.update(settings.SECRET_KEY.encode())
+    h.update(s.encode())
+    return int.from_bytes(h.digest()[:4], byteorder='little') % (2 ** 30)
+
+
 def run_test(exe, gen, prob_id, prob_conf, group, n):
     solution = os.path.join(settings.PROBLEM_DIR, prob_id, 'bin', 'solve')
     runner = os.path.join(settings.BASE_DIR, 'native', prob_conf['flavor'], 'bin', 'runner')
     params = prob_conf['groups'][group]['vars'].copy()
-    params['RAND_SEED'] = hash("{}_{}_{}".format(prob_id, group, n)) % (2 ** 30)
+    params['RAND_SEED'] = get_seed("{}_{}_{}".format(prob_id, group, n))
 
     real_time_limit = prob_conf['limits']['real_time'] // 1000
     cpu_time_limit = prob_conf['limits']['cpu_time']
@@ -126,4 +134,7 @@ def invoke(exe, prob_id):
         else:
             break
 
-    return dict(score=score, cpu=max_cpu, mem=max_mem, log=log)
+    score2 = max_cpu / prob_conf['limits']['cpu_time'] + max_mem / prob_conf['limits']['address_space']
+    score2 /= 2
+    score2 = 1 - score2
+    return dict(score=score, score2=score2, cpu=max_cpu, mem=max_mem, log=log)

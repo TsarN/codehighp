@@ -38,7 +38,7 @@
             {% if run.status == 'AC' %}
                 <td>{{ run.cpu_used }} ms</td>
                 <td>{{ run.memory_used }} KiB</td>
-                <td>{{ run.normalized_score }}</td>
+                <td>{{ run.html_score|safe }}</td>
             {% else %}
                 <td colspan="3">N/A</td>
             {% endif %}
