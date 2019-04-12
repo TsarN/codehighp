@@ -12,7 +12,9 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(TemplateView, self).get_context_data(**kwargs)
-        posts = Post.objects.filter(is_important=True, is_post=True, is_published=True).select_related('author').order_by('-id')
+        posts = Post.objects.filter(is_important=True, is_post=True, is_published=True)\
+            .select_related('author')\
+            .order_by('-id')
         votes = {i.post_id: i for i in PostVote.objects.filter(post__in=posts, user_id=self.request.user.id)}
 
         for post in posts:

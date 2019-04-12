@@ -60,7 +60,7 @@
         </p>
         {{ node.contents|markdown }}
         {% if node.author_id == user.id %}
-        <div style="display: none" id="original-markdown-{{ node.id }}">{{ node.contents }}</div>
+        <div style="display: none" id="original-markdown-{{ node.id }}" class="tex2jax_ignore">{{ node.contents }}</div>
         {% endif %}
         <div style="display: none" id="comment-form-{{ node.id }}" class="comment-form"></div>
         {% if not node.is_leaf_node %}
