@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
 
     buildjumps();
     run();
+    memused++;
 
     fprintf(stderr, "{\"verdict\": \"%s\", \"cpu\": %d, \"mem\": %d, \"real\": 0, \"exitcode\": 0}\n", verdict_s[v], timeused, memused);
     return 0;

@@ -141,4 +141,6 @@ def invoke(exe, prob_id):
     score2 = max_cpu / prob_conf['limits']['cpu_time'] + max_mem / prob_conf['limits']['address_space']
     score2 /= 2
     score2 = 1 - score2
+    if score == 0:
+        score2 = 0
     return dict(score=score, score2=score2, cpu=max_cpu, mem=max_mem, log=log)
