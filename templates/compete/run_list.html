@@ -36,8 +36,8 @@
                 {% endif %}
             </td>
             {% if run.status == 'AC' %}
-                <td>{{ run.cpu_used }} ms</td>
-                <td>{{ run.memory_used }} KiB</td>
+                <td>{{ run.cpu_used }} {% if run.flavor == 'vm' %}cycles{% else %}ms{% endif %}</td>
+                <td>{{ run.memory_used }} {% if run.flavor == 'vm' %}cells{% else %}KiB{% endif %}</td>
                 <td>{{ run.html_score|safe }}</td>
             {% else %}
                 <td colspan="3">N/A</td>

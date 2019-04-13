@@ -70,7 +70,7 @@ class ContestView(TemplateView):
         if contest.status == Contest.NOT_STARTED:
             raise PermissionDenied
 
-        problems = contest.problem_set.all()
+        problems = contest.problem_set.order_by('short_name').all()
         problem_statuses = UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all()
         problem_statuses = {i.problem_id: i for i in problem_statuses}
         for prob in problems:
@@ -122,6 +122,11 @@ class ContestRunsView(LoginRequiredMixin, ListView):
         if not reg or contest.status == Contest.NOT_STARTED:
             raise PermissionDenied
         context['registration'] = reg[0]
+        flavor_cache = dict()
+        for run in context['run_list']:
+            if run.problem_id not in flavor_cache:
+                flavor_cache[run.problem_id] = run.problem.config['flavor'].split('.')[0]
+            run.flavor = flavor_cache[run.problem_id]
         return context
 
     def get_queryset(self):
@@ -142,6 +147,8 @@ class ProblemRunsView(LoginRequiredMixin, ListView):
         problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
         if not problem.is_visible(self.request.user.id):
             raise PermissionDenied
+        for run in context['run_list']:
+            run.flavor = problem.config['flavor'].split('.')[0]
         context['problem'] = problem
         return context
 
@@ -185,6 +192,8 @@ class ProblemView(FormView):
                                   .order_by('-id').select_related('user', 'problem')[:settings.RUNS_ON_PROBLEM_PAGE]
             context['runs_truncated'] = (len(runs) == settings.RUNS_ON_PROBLEM_PAGE)
             context['runs'] = runs
+            for run in runs:
+                run.flavor = problem.config['flavor'].split('.')[0]
             if problem.contest_id:
                 reg = list(ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id))
                 if reg:
@@ -199,6 +208,12 @@ class ProblemView(FormView):
         initial = super(ProblemView, self).get_initial()
         initial['prob_id'] = self.kwargs.get('pk')
         return initial
+
+    def get_form_kwargs(self):
+        problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        kwargs = super(ProblemView, self).get_form_kwargs()
+        kwargs['flavor'] = problem.config['flavor']
+        return kwargs
 
     def form_valid(self, form):
         form.submit_run(self.request.user)
@@ -221,6 +236,7 @@ class RunView(SingleObjectMixin, UserPassesTestMixin, TemplateView):
         run = self.object
         context['run'] = run
         context['runs'] = [run]
+        context['flavor'] = run.problem.config['flavor'].split('.')[0]
         log = run.read_log()
 
         try:

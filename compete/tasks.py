@@ -28,17 +28,20 @@ def invoke_run(run_id, prob_id, lang_id, src):
     with open(src_file, 'wb') as f:
         f.write(src)
 
-    if lang_conf['flavor'] == 'native':
+    if lang_conf['flavor'] == 'native' or lang_conf.get('interpreted'):
         run.status = Run.RUNNING
         run.save()
 
-        exe_path, verdict, compile_log = compile_native(src_file, lang_conf)
-        os.remove(src_file)
-        if verdict != Run.ACCEPTED:
-            run.status = verdict
-            run.write_log(dict(compile=compile_log))
-            run.save()
-            return
+        if lang_conf.get('interpreted'):
+            exe_path = src_file
+        else:
+            exe_path, verdict, compile_log = compile_native(src_file, lang_conf)
+            os.remove(src_file)
+            if verdict != Run.ACCEPTED:
+                run.status = verdict
+                run.write_log(dict(compile=compile_log))
+                run.save()
+                return
 
         stats = invoke(exe_path, prob_id)
         os.remove(exe_path)

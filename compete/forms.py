@@ -13,8 +13,9 @@ class RunSubmitForm(forms.Form):
     lang_id = forms.CharField(widget=forms.Select(choices=settings.COMPILERS_ENUM), label='Language')
     src_file = forms.FileField(label='Source file')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, flavor=None, *args, **kwargs):
         super(RunSubmitForm, self).__init__(*args, **kwargs)
+        self.fields['lang_id'].widget.choices = [(k, v['name']) for k, v in settings.COMPILERS.items() if v['flavor'] == flavor]
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Submit'))
 

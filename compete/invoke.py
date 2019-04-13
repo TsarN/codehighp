@@ -36,19 +36,23 @@ def get_seed(s):
 def run_test(exe, gen, prob_id, prob_conf, group, n):
     solution = os.path.join(settings.PROBLEM_DIR, prob_id, 'bin', 'solve')
     runner = os.path.join(settings.BASE_DIR, 'native', prob_conf['flavor'], 'bin', 'runner')
-    params = prob_conf['groups'][group]['vars'].copy()
-    params['RAND_SEED'] = get_seed("{}_{}_{}".format(prob_id, group, n))
+    if 'vars' in prob_conf['groups'][group]:
+        params = prob_conf['groups'][group]['vars'].copy()
+        params['RAND_SEED'] = get_seed("{}_{}_{}".format(prob_id, group, n))
 
-    real_time_limit = prob_conf['limits']['real_time'] // 1000
+    real_time_limit = (prob_conf['limits'].get('real_time', 0) + 999) // 1000
     cpu_time_limit = prob_conf['limits']['cpu_time']
     address_space_limit = prob_conf['limits']['address_space']
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        input_path = os.path.join(tmpdir, 'input')
         output_path = os.path.join(tmpdir, 'output')
         answer_path = os.path.join(tmpdir, 'answer')
 
-        gen_test(gen, input_path, params)
+        if prob_conf['groups'][group].get('input_file'):
+            input_path = os.path.join(settings.PROBLEM_DIR, prob_id, prob_conf['groups'][group]['input_file'] % n)
+        else:
+            input_path = os.path.join(tmpdir, 'input')
+            gen_test(gen, input_path, params)
 
         with open(input_path, 'rb') as input_file, open(answer_path, 'wb') as answer_file:
             subprocess.run([solution], stdin=input_file, stdout=answer_file)

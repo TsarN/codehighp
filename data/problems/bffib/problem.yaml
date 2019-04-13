@@ -1,0 +1,17 @@
+flavor: "vm.brainfuck"
+
+limits:
+    cpu_time: 20000
+    address_space: 256
+    source_size: 65536
+
+check: "exact"
+solve: "solve.c"
+statement: "statement.md"
+
+groups:
+    0:
+        tests: 10
+        input_file: "tests/%02d"
+        score: 1000
+

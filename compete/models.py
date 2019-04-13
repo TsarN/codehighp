@@ -121,12 +121,18 @@ class ContestRegistration(models.Model):
 
 
 class Problem(models.Model):
-    LIMITS = (
+    LIMITS_native = (
         ('real_time', 'Max time per test: %.1f sec', 10**-3),
         ('cpu_time', 'Max CPU time per test: %.1f sec', 10**-3),
         ('address_space', 'Max memory per test: %.1f MiB', 1/1024),
         ('source_size', 'Max source code size: %.1f KiB', 1 / 1024),
         ('threads', 'Max threads allowed: %d', 1),
+    )
+
+    LIMITS_vm = (
+        ('cpu_time', 'Max execution time per test: %d cycles', 1),
+        ('address_space', 'Max memory per test: %d cells', 1),
+        ('source_size', 'Max source code size: %.1f KiB', 1 / 1024),
     )
 
     VISIBILITY = (
@@ -196,7 +202,7 @@ class Problem(models.Model):
     @property
     def humanized_limits(self):
         result = "Flavor: <a href=\"/help/flavors/{0}\">{0}</a>\n".format(self.config.get('flavor'))
-        for limit, msg, factor in self.LIMITS:
+        for limit, msg, factor in getattr(self, 'LIMITS_{}'.format(self.config['flavor'].split('.')[0])):
             value = self.config.get('limits', {}).get(limit)
             if not value:
                 continue

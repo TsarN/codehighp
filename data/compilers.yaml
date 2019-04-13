@@ -26,3 +26,9 @@ g++-nostdlib:
     obj: "wrapper_nostdlib.a"
     compile: ["/usr/bin/g++", "-Dmain=_SolutionMain", "[src]", "[obj]", "-std=c++17", "-nostdlib", "-g0", "-O2", "-march=native", "-mtune=native", "-o", "[exe]"]
 
+
+brainfuck:
+    name: "Brainfuck"
+    flavor: "vm.brainfuck"
+    suffix: ".bf"
+    interpreted: true
