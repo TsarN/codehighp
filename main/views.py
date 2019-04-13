@@ -10,6 +10,14 @@ class PrivacyPolicyView(TemplateView):
     template_name = 'privacy.html'
 
 
+class DonateView(TemplateView):
+    template_name = 'donate.html'
+
+
+class DonateThanksView(TemplateView):
+    template_name = 'donate_thanks.html'
+
+
 class HelpView(TemplateView):
     template_name = 'help.html'
 
