@@ -133,3 +133,7 @@ a.downvote-button.active {
 .comment {
     border-left: 1px solid #888;
 }
+
+form.form-inline > div {
+    display: inline-block;
+}

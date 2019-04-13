@@ -2,6 +2,10 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 
+{% block title %}
+    User '{{ customuser.username }}' - CodeHighp
+{% endblock %}
+
 {% block body %}
 <main class="fullwidth">
     <div class="my-card">
@@ -38,7 +42,7 @@
         {% if user.id == customuser.id %}
             <hr />
             <a href="#" class="button">Edit profile</a>
-            <a href="#" class="button">Change password</a>
+            <a href="{% url 'password_change' %}" class="button">Change password</a>
         {% endif %}
     </div>
 </main>
