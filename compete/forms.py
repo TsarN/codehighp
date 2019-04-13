@@ -54,20 +54,30 @@ class ContestRegistrationForm(forms.Form):
     contest_id = forms.IntegerField(widget=forms.HiddenInput())
     agree = forms.BooleanField(required=True, label='I have read and agree to these rules')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, reg=None, user=None, *args, **kwargs):
         super(ContestRegistrationForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Register'))
+        self.helper.add_input(Submit('submit', 'Register' if reg == Contest.OPEN_REGISTRATION else 'Send request to register'))
+        self.reg = reg
+        self.user = user
 
     def clean_contest_id(self):
         contest_id = self.cleaned_data['contest_id']
-        if not Contest.objects.filter(pk=contest_id).exists():
+        contest = list(Contest.objects.filter(pk=contest_id))
+        if not contest:
             raise ValidationError("Contest does not exist")
+        contest = contest[0]
+        if not contest.can_register(self.user.id):
+            raise ValidationError("Cannot register for this contest")
         return contest_id
 
-    def register(self, user):
-        if not user.is_authenticated:
+    def register(self):
+        if not self.user.is_authenticated:
             return
         form_data = self.cleaned_data
-        reg = ContestRegistration(user_id=user.id, contest_id=form_data['contest_id'], official=True)
+        if self.reg == Contest.OPEN_REGISTRATION:
+            status = ContestRegistration.REGISTERED
+        else:
+            status = ContestRegistration.PENDING
+        reg = ContestRegistration(user_id=self.user.id, contest_id=form_data['contest_id'], official=True, status=status)
         reg.save()

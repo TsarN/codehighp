@@ -2,11 +2,12 @@ import os.path
 import gzip
 
 import markdown2
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.conf import settings
 import yaml
 import msgpack
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q, Prefetch
 from django.db.transaction import atomic
 from django.utils import timezone
 
@@ -19,6 +20,12 @@ class Contest(models.Model):
         ('TR', 'Training contest')
     )
 
+    REGISTRATION = (
+        ('OP', 'Open registration'),
+        ('MD', 'Moderated registration'),
+        ('IN', 'Only by invites'),
+    )
+
     STATUS = (
         ('NS', 'Not started'),
         ('RN', 'Running'),
@@ -28,12 +35,18 @@ class Contest(models.Model):
     CLASSICAL = 'CT'
     TRAINING = 'TR'
 
+    OPEN_REGISTRATION = 'OP'
+    MODERATED_REGISTRATION = 'MD'
+    ONLY_BY_INVITES = 'IN'
+
     NOT_STARTED = 'NS'
     RUNNING = 'RN'
     FINISHED = 'FN'
 
     name = models.CharField(max_length=255)
     kind = models.CharField(max_length=2, choices=KINDS)
+    registration = models.CharField(max_length=2, choices=REGISTRATION, default=OPEN_REGISTRATION)
+    visible = models.BooleanField(blank=True, default=True, help_text="Is this contest visible to non-participants?")
     start_date = models.DateTimeField(null=True, blank=True)
     duration = models.DurationField(null=True, blank=True)
     authors = models.ManyToManyField(CustomUser, related_name='authored_contests')
@@ -55,6 +68,41 @@ class Contest(models.Model):
         else:
             update_contest_status(self.id)
 
+    def can_access(self, user_id):
+        if self.status == Contest.NOT_STARTED:
+            return False
+        if self.visible:
+            return True
+        return ContestRegistration.objects.filter(
+            user_id=user_id, contest_id=self.id, status=ContestRegistration.REGISTERED).exists()
+
+    def can_register(self, user_id):
+        if not self.registration_open or not self.can_access(user_id):
+            return False
+        return not ContestRegistration.objects.filter(
+            user_id=user_id, contest_id=self.id).exists()
+
+    def ensure_can_access(self, user_id):
+        if self.status == Contest.NOT_STARTED:
+            raise PermissionDenied
+        reg = list(ContestRegistration.objects.filter(user_id=user_id, contest_id=self.id))
+        if self.visible:
+            return reg[0] if reg else None
+        if not reg or reg[0].status != ContestRegistration.REGISTERED:
+            raise PermissionDenied
+        return reg[0]
+
+    @staticmethod
+    def get_visible(qs, user_id):
+        if not user_id:
+            return qs.filter(visible=True)
+        regs = {i.contest_id: i for i in ContestRegistration.objects.filter(user_id=user_id)}
+        contests = []
+        for contest in qs:
+            if contest.visible or (contest.id in regs and regs[contest.id].status == ContestRegistration.REGISTERED):
+                contests.append(contest)
+        return contests
+
     def get_timings(self):
         now = timezone.now()
         if not self.start_date:
@@ -69,7 +117,7 @@ class Contest(models.Model):
 
     @property
     def registration_open(self):
-        return self.status != Contest.FINISHED
+        return self.status != Contest.FINISHED and self.registration != Contest.ONLY_BY_INVITES
 
     @property
     def status(self):

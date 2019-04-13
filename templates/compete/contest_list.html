@@ -22,11 +22,11 @@
     {% for contest in contest_list %}
         <tr>
             <td>
-                <b>{{ contest.name }}</b>
-                {% if contest.registration %}
-                    <br />{{ contest.registration.get_status_display }}.
+                <b>{{ contest.name }}</b><br />
+                {% if contest.reg %}
+                    {{ contest.reg.get_status_display }}.
                 {% elif contest.registration_open %}
-                    <br /><a href="{% url 'contest_register' contest.id %}">Register</a>
+                    <a href="{% url 'contest_register' contest.id %}">Register</a>
                 {% endif %}
                 {% if contest.status != contest.NOT_STARTED %}
                     <a href="{% url 'contest' contest.id %}">Enter</a>

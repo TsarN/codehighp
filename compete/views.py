@@ -15,27 +15,25 @@ from compete.invoke import VERDICTS
 from compete.models import Problem, Run, Contest, ContestRegistration, UserProblemStatus
 
 
-class ContestListView(ListView):
-    model = Contest
+class ContestListView(TemplateView):
     template_name = 'compete/contest_list.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(ContestListView, self).get_context_data(object_list=object_list, **kwargs)
+        contests = Contest.get_visible(Contest.objects
+            .prefetch_related('authors')
+            .annotate(num_participants=Count('participants', filter=Q(
+                            contestregistration__status=ContestRegistration.REGISTERED),
+                            distinct=True))
+            .order_by('-id'), self.request.user.id)
         if self.request.user.is_authenticated:
             regs = ContestRegistration.objects.filter(user_id=self.request.user.id)
             dregs = {i.contest_id: i for i in regs}
-            for contest in context['contest_list']:
+            for contest in contests:
                 if contest.id in dregs:
-                    contest.registration = dregs[contest.id]
+                    contest.reg = dregs[contest.id]
+        context['contest_list'] = contests
         return context
-
-    def get_queryset(self):
-        return Contest.objects\
-            .prefetch_related('authors')\
-            .annotate(num_participants=Count('participants', filter=Q(
-                            contestregistration__status=ContestRegistration.REGISTERED),
-                            distinct=True))\
-            .order_by('-id')
 
 
 class ContestRegistrationView(LoginRequiredMixin, FormView):
@@ -45,8 +43,8 @@ class ContestRegistrationView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super(ContestRegistrationView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
-        if ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id).exists():
-            raise Http404()
+        if not contest.can_register(self.request.user.id):
+            raise PermissionDenied
         context['contest'] = contest
         return context
 
@@ -55,8 +53,15 @@ class ContestRegistrationView(LoginRequiredMixin, FormView):
         initial['contest_id'] = self.kwargs.get('pk')
         return initial
 
+    def get_form_kwargs(self):
+        kwargs = super(ContestRegistrationView, self).get_form_kwargs()
+        contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        kwargs['reg'] = contest.registration
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
-        form.register(self.request.user)
+        form.register()
         return redirect(reverse('contest_list'))
 
 
@@ -66,10 +71,7 @@ class ContestView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(ContestView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
-        reg = list(ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id))
-        if contest.status == Contest.NOT_STARTED:
-            raise PermissionDenied
-
+        reg = contest.ensure_can_access(self.request.user.id)
         problems = contest.problem_set.order_by('short_name').all()
         problem_statuses = UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all()
         problem_statuses = {i.problem_id: i for i in problem_statuses}
@@ -92,7 +94,7 @@ class ContestView(TemplateView):
         context['contest'] = contest
         context['problems'] = problems
         if reg:
-            context['registration'] = reg[0]
+            context['registration'] = reg
         return context
 
 
@@ -116,12 +118,8 @@ class ContestRunsView(LoginRequiredMixin, ListView):
         context = super(ContestRunsView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         context['contest'] = contest
-        reg = list(ContestRegistration.objects.filter(
-            user_id=self.request.user.id,
-            contest_id=contest.id, status=ContestRegistration.REGISTERED))
-        if not reg or contest.status == Contest.NOT_STARTED:
-            raise PermissionDenied
-        context['registration'] = reg[0]
+        reg = contest.ensure_can_access(self.request.user.id)
+        context['registration'] = reg
         flavor_cache = dict()
         for run in context['run_list']:
             if run.problem_id not in flavor_cache:
