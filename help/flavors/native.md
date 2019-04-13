@@ -31,7 +31,7 @@ Also, if you're writing C++ code, you should mark your
 `main` function as `extern "C"`.
 
 Following flags are used to compile C/C++ code:
-`-g0 -O2 -static`.
+`-g0 -O2 -static -march=native -mtune=native`.
 
 Sometimes Memory Limit Exceeded is detected as
 Runtime Error. It's because OS won't give your program
@@ -87,7 +87,7 @@ The only function that will be available is the
 compiler when submitting your solution.
 Following flags are used to compile C/C++ 
 code in this mode:
-`-g0 -O2 -nostdlib`.
+`-g0 -O2 -nostdlib -march=native -mtune=native`.
 
 Example solution for A+B:
 
