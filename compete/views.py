@@ -66,7 +66,7 @@ class ContestView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(ContestView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
-        reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id)
+        reg = list(ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=contest.id))
         if contest.status == Contest.NOT_STARTED:
             raise PermissionDenied
 
@@ -91,7 +91,7 @@ class ContestView(TemplateView):
 
         context['contest'] = contest
         context['problems'] = problems
-        if reg.exists():
+        if reg:
             context['registration'] = reg[0]
         return context
 
@@ -116,9 +116,10 @@ class ContestRunsView(LoginRequiredMixin, ListView):
         context = super(ContestRunsView, self).get_context_data(**kwargs)
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         context['contest'] = contest
-        reg = ContestRegistration.objects.filter(user_id=self.request.user.id,
-                                                 contest_id=contest.id, status=ContestRegistration.REGISTERED)
-        if not reg.exists() or contest.status == Contest.NOT_STARTED:
+        reg = list(ContestRegistration.objects.filter(
+            user_id=self.request.user.id,
+            contest_id=contest.id, status=ContestRegistration.REGISTERED))
+        if not reg or contest.status == Contest.NOT_STARTED:
             raise PermissionDenied
         context['registration'] = reg[0]
         return context
@@ -185,8 +186,8 @@ class ProblemView(FormView):
             context['runs_truncated'] = (len(runs) == settings.RUNS_ON_PROBLEM_PAGE)
             context['runs'] = runs
             if problem.contest_id:
-                reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id)
-                if reg.exists():
+                reg = list(ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id))
+                if reg:
                     context['registration'] = reg[0]
                     if reg[0].status == ContestRegistration.REGISTERED:
                         context['can_submit'] = True

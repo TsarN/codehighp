@@ -138,3 +138,4 @@ with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
 COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
 
 RUNS_ON_PROBLEM_PAGE = 50
+POSTS_PER_PAGE = 20

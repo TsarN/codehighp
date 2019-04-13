@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, TemplateView, View, FormView
@@ -15,6 +17,8 @@ class IndexView(TemplateView):
         posts = Post.objects.filter(is_important=True, is_post=True, is_published=True)\
             .select_related('author')\
             .order_by('-id')
+        paginator = Paginator(posts, settings.POSTS_PER_PAGE)
+        posts = paginator.get_page(self.request.GET.get('page'))
         votes = {i.post_id: i for i in PostVote.objects.filter(post__in=posts, user_id=self.request.user.id)}
 
         for post in posts:

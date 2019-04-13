@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% load blog %}
+{% load paginate %}
 
 {% block body %}
 <main class="fullwidth">
 {% for post in posts %}
     {% post post True %}
 {% endfor %}
+{% paginate posts %}
 </main>
 {% endblock %}
