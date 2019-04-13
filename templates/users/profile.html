@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load humanize %}
 
 {% block body %}
 <main class="fullwidth">
@@ -11,9 +12,30 @@
             {{ customuser.username }}
         </h2>
 
-        {{ customuser.get_full_name }}
+        <p>{{ customuser.get_full_name }}</p>
+        {% if customuser.country %}
+            <p>
+            <span class="icon-location"></span>
+            {{ customuser.country.name }}
+            </p>
+        {% endif %}
+        {% if customuser.bio %}
+        <p style="white-space: nowrap; font-style: italic;">{{ customuser.bio }}</p>
+        {% endif %}
+        <p>
+            Member since {{ customuser.date_joined|naturalday }}
+        </p>
+        <p>
+            {% if customuser.is_online %}
+                <b>Online</b>
+            {% elif customuser.last_online %}
+                Last login: {{ customuser.last_online|naturaltime }}
+            {% else %}
+                Never logged in
+            {% endif %}
+        </p>
 
-        {% if user.id == customuser.id or user.is_staff %}
+        {% if user.id == customuser.id %}
             <hr />
             <a href="#" class="button">Edit profile</a>
             <a href="#" class="button">Change password</a>

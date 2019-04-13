@@ -1,6 +1,7 @@
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, HTML, Field
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from crispy_forms.helper import FormHelper
+from django.forms import Textarea
 
 from users.models import CustomUser
 
@@ -22,7 +23,10 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ('username', 'email')
+        fields = ('username', 'email', 'country', 'bio')
+        widgets = {
+            'bio': Textarea(attrs={'cols': 40, 'rows': 7})
+        }
 
 
 class CustomAuthenticationForm(AuthenticationForm):

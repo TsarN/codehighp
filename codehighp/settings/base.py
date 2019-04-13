@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'crispy_forms',
     'mptt',
+    'django_countries',
 
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'users.middleware.TrackLastLoginMiddleware',
 ]
 
 ROOT_URLCONF = 'codehighp.urls'
@@ -139,3 +141,4 @@ COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
 
 RUNS_ON_PROBLEM_PAGE = 50
 POSTS_PER_PAGE = 20
+ONLINE_TIMEOUT = 300
