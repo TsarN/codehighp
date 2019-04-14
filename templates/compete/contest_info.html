@@ -44,7 +44,7 @@
         <h3>Observer mode</h3>
         <p>
             Only registered participants can submit solutions.
-            {% if not registration %}
+            {% if not registration and contest.registration_open %}
                 <a href="{% url 'contest_register' contest.id %}">Register?</a>
             {% endif %}
         </p>

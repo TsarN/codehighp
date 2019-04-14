@@ -169,7 +169,7 @@ class ProblemView(FormView):
         can_submit = False
         if problem.contest_id:
             reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id, status=ContestRegistration.REGISTERED)
-            if reg.exists():
+            if reg.exists() or problem.contest.status == Contest.FINISHED:
                 can_submit = True
         else:
             can_submit = True
@@ -198,8 +198,11 @@ class ProblemView(FormView):
                     context['registration'] = reg[0]
                     if reg[0].status == ContestRegistration.REGISTERED:
                         context['can_submit'] = True
+                if problem.contest.status == Contest.FINISHED:
+                    context['can_submit'] = True
             else:
                 context['can_submit'] = True
+        context['samples'] = problem.get_samples()
         return context
     
     def get_initial(self):

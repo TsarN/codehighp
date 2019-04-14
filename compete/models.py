@@ -1,5 +1,7 @@
+import base64
 import os.path
 import gzip
+import struct
 
 import markdown2
 from django.core.exceptions import PermissionDenied
@@ -234,6 +236,30 @@ class Problem(models.Model):
         with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, "problem.yaml")) as f:
             self._config = yaml.safe_load(f)
         return self._config
+
+    def get_samples(self):
+        def expand(fmt, data):
+            actdata = [i for i in data if i != '\\n']
+            human = ' '.join(map(str, data))
+            human = '\n'.join(i.strip() for i in human.split('\\n'))
+            encoded = base64.b64encode(struct.pack(fmt, *actdata)).decode()
+
+            return dict(human=human, encoded=encoded)
+
+        res = []
+        for sample in self.config.get('samples', []):
+            inp = expand(sample['input']['format'], sample['input']['data'])
+            ans = expand(sample['answer']['format'], sample['answer']['data'])
+
+            instr = '''
+<p>Assuming your solution is named <code>./a.out</code>, running the following in your shell:</p>
+<pre>echo '{}' | base64 -d | ./a.out | base64</pre> <p>should produce</p>
+<pre>{}</pre>
+'''.format(inp['encoded'], ans['encoded'])
+
+            res.append(dict(inp=inp['human'], ans=ans['human'], instr=instr))
+
+        return res
 
     @property
     def statement(self):

@@ -16,6 +16,8 @@ since current cell is stored as 64-bit unsigned integer.
 Each cell is an unsigned 8-bit integer.
 Characters that are not valid Brainfuck commands are ignored.
 
+If there is an unmatched `[` or `]`, checker will report Runtime Error.
+
 ## Example
 
 This program prints "hello world":

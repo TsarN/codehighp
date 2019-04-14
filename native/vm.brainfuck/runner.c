@@ -16,6 +16,7 @@ enum verdict {
     TL,
     RL,
     ML,
+    RE,
     OK
 };
 
@@ -24,6 +25,7 @@ const char *verdict_s[] = {
     "TL",
     "RL",
     "ML",
+    "RE",
     "OK"
 };
 
@@ -37,11 +39,16 @@ void buildjumps(void) {
         if (*c == '[') {
             stack[spos++] = c - program;
         } else if (*c == ']') {
+            if (!spos) {
+                v = RE;
+                return;
+            }
             jump[c - program] = stack[spos-1];
             jump[stack[spos-1]] = c - program;
             spos--;
         }
     }
+    if (spos) v = RE;
 }
 
 void run(void) {
@@ -92,8 +99,10 @@ int main(int argc, char **argv) {
     fclose(f);
 
     buildjumps();
-    run();
-    memused++;
+    if (v == OK) {
+        run();
+        memused++;
+    }
 
     fprintf(stderr, "{\"verdict\": \"%s\", \"cpu\": %d, \"mem\": %d, \"real\": 0, \"exitcode\": 0}\n", verdict_s[v], timeused, memused);
     return 0;

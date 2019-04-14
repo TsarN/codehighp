@@ -57,8 +57,7 @@ ROOT_URLCONF = 'codehighp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -142,3 +141,5 @@ COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
 RUNS_ON_PROBLEM_PAGE = 50
 POSTS_PER_PAGE = 20
 ONLINE_TIMEOUT = 300
+
+QUOTA_PROBLEM_RUNS = 200

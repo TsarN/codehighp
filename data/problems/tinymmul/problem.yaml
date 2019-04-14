@@ -10,6 +10,14 @@ limits:
 check: "exact"
 statement: "statement.md"
 
+samples:
+    - input:
+          format: "IIIIIIIII"
+          data: [2, '\n', 1, 2, '\n', 3, 4, '\n', 10, 20, '\n', 30, 40]
+      answer:
+          format: "IIII"
+          data: [70, 100, '\n', 150, 220]
+
 groups:
     0:
         vars:

@@ -12,6 +12,14 @@ gen: "gen.c"
 solve: "solve.c"
 statement: "statement.md"
 
+samples:
+    - input:
+          format: "IIIIIII"
+          data: [3, '\n', 1, 2, 3, '\n', 30, 20, 10]
+      answer:
+          format: "III"
+          data: [31, 22, 13]
+
 groups:
     0:
         vars:

@@ -13,6 +13,26 @@
 <pre>{{ problem.humanized_limits|safe }}</pre>
 
 {{ problem.statement|safe }}
+{% if samples %}
+    <hr />
+    {% for sample in samples %}
+        <h3>
+            Sample test #{{ forloop.counter0 }}
+        </h3>
+        {{ sample.instr|safe }}
+        <p>Explanation for humans:</p>
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Input</h4>
+                <pre>{{ sample.inp }}</pre>
+            </div>
+            <div class="col-md-6">
+                <h4>Answer</h4>
+                <pre>{{ sample.ans }}</pre>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
 <hr />
 
 {% if user.is_authenticated %}
@@ -20,7 +40,7 @@
     {% crispy form %}
     <hr />
 {% else %}
-    You need to register for the contest to submit solutions.
+    <p><em>You need to register for the contest to submit solutions</em></p>
 {% endif %}
     {% if runs %}
         <h3>
@@ -34,12 +54,12 @@
         {% endif %}
     {% endif %}
     {% if not runs and can_submit %}
-        <em>You don't have any attempts on this problem.</em>
+        <p><em>You don't have any attempts on this problem.</em></p>
     {% endif %}
 {% else %}
-    <em>
+    <p><em>
         <a href="{% url 'login' %}">Log in</a> to submit solutions
-    </em>
+    </em></p>
 {% endif %}
 </main>
 {% endblock %}
