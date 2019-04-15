@@ -12,6 +12,7 @@ from codehighp.redis import redis_conn
 class CustomUser(AbstractUser):
     bio = models.CharField(max_length=200, help_text="A bit about yourself", blank=True, default='')
     country = CountryField(blank=True, null=True, default=None)
+    is_problemsetter = models.BooleanField(blank=True, default=False)
 
     @property
     def html_link(self):

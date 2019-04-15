@@ -20,13 +20,26 @@ def compile_native(src, lang_conf):
             compile_cmd.append(obj)
         else:
             compile_cmd.append(i)
+    compile_cmd += ["-I", os.path.join(settings.BASE_DIR, 'native', 'include')]
     try:
         res = subprocess.run(compile_cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.STDOUT, timeout=10, text=True)
     except subprocess.TimeoutExpired:
         return exe, Run.COMPILATION_ERROR, 'Took too long to compile'
+    except:
+        return exe, Run.COMPILATION_ERROR, 'Unknown error'
 
     if res.returncode != 0:
         return exe, Run.COMPILATION_ERROR, res.stdout
 
     return exe, Run.ACCEPTED, None
+
+
+def compile_run(src, lang_conf, no_delete=False):
+    if lang_conf.get('interpreted'):
+        return src, Run.ACCEPTED, ''
+    else:
+        exe_path, verdict, compile_log = compile_native(src, lang_conf)
+        if not no_delete:
+            os.remove(src)
+        return exe_path, verdict, compile_log

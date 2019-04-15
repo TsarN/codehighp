@@ -9,7 +9,9 @@ limits:
 
 check: "exact"
 gen: "gen.c"
+gen_lang: "gcc"
 solve: "solve.c"
+solve_lang: "gcc"
 statement: "statement.md"
 
 samples:

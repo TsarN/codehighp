@@ -6,7 +6,8 @@ limits:
     source_size: 65536
 
 check: "exact"
-solve: "solve.c"
+solve: "solve.bf"
+solve_lang: "brainfuck"
 statement: "statement.md"
 
 groups:

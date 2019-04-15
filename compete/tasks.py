@@ -5,12 +5,12 @@ from django.conf import settings
 from django.db.transaction import atomic
 
 from compete.invoke import invoke
-from compete.compile import compile_native
+from compete.compile import compile_native, compile_run
 from compete.models import Run, Contest, Problem
 from util import get_tempfile_name
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5}, default_retry_delay=5)
 def invoke_run(run_id, prob_id, lang_id, src):
     try:
         run = Run.objects.get(pk=run_id)
@@ -32,16 +32,12 @@ def invoke_run(run_id, prob_id, lang_id, src):
             run.status = Run.RUNNING
             run.save()
 
-            if lang_conf.get('interpreted'):
-                exe_path = src_file
-            else:
-                exe_path, verdict, compile_log = compile_native(src_file, lang_conf)
-                os.remove(src_file)
-                if verdict != Run.ACCEPTED:
-                    run.status = verdict
-                    run.write_log(dict(compile=compile_log))
-                    run.save()
-                    return
+            exe_path, verdict, compile_log = compile_run(src_file, lang_conf)
+            if verdict != Run.ACCEPTED:
+                run.status = verdict
+                run.write_log(dict(compile=compile_log))
+                run.save()
+                return
 
             stats = invoke(exe_path, prob_id)
             os.remove(exe_path)

@@ -1,4 +1,5 @@
 .idea
+gitolite-admin
 # Node
 node_modules/
 # Byte-compiled / optimized / DLL files

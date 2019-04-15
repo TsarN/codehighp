@@ -1,11 +1,10 @@
+#include "highplib.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 int main()
 {
-    srand(atoi(getenv("RAND_SEED")));
-    freopen(NULL, "wb", stdout);
-    unsigned int n = atoi(getenv("N"));
+    init_gen(MODE_BINARY);
+    unsigned int n = atoi(get_var("N"));
     fwrite(&n, sizeof(n), 1, stdout);
     for (unsigned int i = 0; i < 2 * n * n; ++i) {
         unsigned int x = rand();

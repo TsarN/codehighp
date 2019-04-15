@@ -1,25 +1,32 @@
+#pragma GCC optimize("Os")
+#define _GNU_SOURCE
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/syscall.h>
 
 int main()
 {
     unsigned int n;
-    fread(&n, sizeof(n), 1, stdin);
-    unsigned int *a = malloc(3 * n * n * sizeof(unsigned int));
-    unsigned int *b = a + n * n;
-    unsigned int *c = b + n * n;
-    memset(c, 0, n * n);
-    fread(a, 2 * n * n * sizeof(unsigned int), 1, stdin);
+    syscall(SYS_read, 0, &n, sizeof(n));
+    syscall(SYS_lseek, 0, n * n * sizeof(unsigned int), SEEK_CUR);
+    unsigned int b[n*n];
+    syscall(SYS_read, 0, b, n * n * sizeof(unsigned int));
     for (unsigned int i = 0; i < n; ++i) {
+        unsigned int a[n];
+        syscall(SYS_lseek, 0, (1 + i * n) * sizeof(unsigned int), SEEK_SET);
+        syscall(SYS_read, 0, a, n * sizeof(unsigned int));
         for (unsigned int j = 0; j < n; ++j) {
+            unsigned int c = 0;
             for (unsigned int k = 0; k < n; ++k) {
-                c[i * n + j] += a[i * n + k] * b[k * n + j];
+                c += a[k] * b[k * n + j];
             }
+            syscall(SYS_write, 1, &c, sizeof(unsigned int));
         }
     }
-    fwrite(c, n * n * sizeof(unsigned int), 1, stdout);
     return 0;
 }

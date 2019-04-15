@@ -4,7 +4,7 @@
 int main()
 {
     init_gen(MODE_BINARY);
-    unsigned int n = atoi(getenv("N"));
+    unsigned int n = atoi(get_var("N"));
     fwrite(&n, sizeof(n), 1, stdout);
     for (unsigned int i = 0; i < n / 2; ++i) {
         unsigned int x[4];

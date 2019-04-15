@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "emmintrin.h"
 
 #define MODE_BINARY 0
@@ -86,11 +87,22 @@ inline void rand_sse( unsigned int* result )
 }
 
 
+const char* get_var(const char* name)
+{
+    size_t len = strlen(name);
+    char env_name[len + 64];
+    strcpy(env_name, "CODEHIGHP_VAR_");
+    strcat(env_name, name);
+    return getenv(env_name);
+}
+
 void init_gen(int mode)
 {
-    if (mode == MODE_BINARY) {
+/*  if (mode == MODE_BINARY) {
         freopen(NULL, "wb", stdout);
     }
+*/
+    srand(atoi(getenv("RAND_SEED")));
     srand_sse(atoi(getenv("RAND_SEED")));
 }
 
