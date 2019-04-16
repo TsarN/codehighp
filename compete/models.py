@@ -205,6 +205,8 @@ class Problem(models.Model):
     contest = models.ForeignKey(Contest, null=True, blank=True, default=None, on_delete=models.SET_NULL)
     score = models.IntegerField(default=0)
     visibility = models.CharField(max_length=2, choices=VISIBILITY, default=AUTO_VISIBLE_EVERYONE)
+    access = models.ManyToManyField(CustomUser, through='ProblemPermission')
+    unlisted = models.BooleanField(blank=False, default=True)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)
@@ -283,6 +285,25 @@ class Problem(models.Model):
             value *= factor
             result += msg % value + "\n"
         return result
+
+
+class ProblemPermission(models.Model):
+    class Meta:
+        unique_together = (('problem', 'user'),)
+
+    ACCESS = (
+        ('OW', 'Owner'),
+        ('WR', 'Write'),
+        ('RD', 'Read'),
+    )
+
+    OWNER = 'OW'
+    WRITE = 'WR'
+    READ = 'RD'
+
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    access = models.CharField(max_length=2, choices=ACCESS, default=OWNER)
 
 
 class UserProblemStatus(models.Model):

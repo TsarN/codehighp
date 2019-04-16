@@ -30,3 +30,5 @@ MAX_LOG_FILE_SIZE = 65536
 INSTALLED_APPS.append('debug_toolbar')
 MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 INTERNAL_IPS = ['127.0.0.1']
+
+GIT_SERVICE_URL = 'http://127.0.0.1:8001'

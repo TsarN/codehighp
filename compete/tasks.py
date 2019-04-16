@@ -1,4 +1,5 @@
 import os
+from fcntl import LOCK_SH
 
 from celery import shared_task
 from django.conf import settings
@@ -7,6 +8,8 @@ from django.db.transaction import atomic
 from compete.invoke import invoke
 from compete.compile import compile_native, compile_run
 from compete.models import Run, Contest, Problem
+from iwatchdog.config import LOCK_DIR
+from iwatchdog.handler import Flock
 from util import get_tempfile_name
 
 
@@ -23,37 +26,40 @@ def invoke_run(run_id, prob_id, lang_id, src):
         return
 
     lang_conf = settings.COMPILERS[lang_id]
-    try:
-        src_file = get_tempfile_name() + lang_conf['suffix']
-        with open(src_file, 'wb') as f:
-            f.write(src)
 
-        if lang_conf['flavor'] == 'native' or lang_conf.get('interpreted'):
-            run.status = Run.RUNNING
-            run.save()
+    with open(os.path.join(LOCK_DIR, prob_id) + '.lock') as f:
+        with Flock(f, LOCK_SH):
+            try:
+                src_file = get_tempfile_name() + lang_conf['suffix']
+                with open(src_file, 'wb') as f:
+                    f.write(src)
 
-            exe_path, verdict, compile_log = compile_run(src_file, lang_conf)
-            if verdict != Run.ACCEPTED:
-                run.status = verdict
-                run.write_log(dict(compile=compile_log))
+                if lang_conf['flavor'] == 'native' or lang_conf.get('interpreted'):
+                    run.status = Run.RUNNING
+                    run.save()
+
+                    exe_path, verdict, compile_log = compile_run(src_file, lang_conf)
+                    if verdict != Run.ACCEPTED:
+                        run.status = verdict
+                        run.write_log(dict(compile=compile_log))
+                        run.save()
+                        return
+
+                    stats = invoke(exe_path, prob_id)
+                    os.remove(exe_path)
+                    run.score = stats['score']
+                    run.score2 = round(stats['score2'] * Run.SCORE_DIVISOR)
+                    run.cpu_used = stats['cpu']
+                    run.memory_used = stats['mem']
+                    run.status = Run.ACCEPTED
+                    run.write_log(stats['log'])
+                else:
+                    run.status = Run.INTERNAL_ERROR
                 run.save()
-                return
-
-            stats = invoke(exe_path, prob_id)
-            os.remove(exe_path)
-            run.score = stats['score']
-            run.score2 = round(stats['score2'] * Run.SCORE_DIVISOR)
-            run.cpu_used = stats['cpu']
-            run.memory_used = stats['mem']
-            run.status = Run.ACCEPTED
-            run.write_log(stats['log'])
-        else:
-            run.status = Run.INTERNAL_ERROR
-        run.save()
-    except:
-        run.status = Run.INTERNAL_ERROR
-        run.save()
-        raise
+            except:
+                run.status = Run.INTERNAL_ERROR
+                run.save()
+                raise
 
 
 def do_invoke_run(run):

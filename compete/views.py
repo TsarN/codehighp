@@ -104,7 +104,8 @@ class ProblemListView(ListView):
 
     def get_queryset(self):
         queryset = Problem.objects.filter(
-            visibility=Problem.VISIBLE_EVERYONE
+            visibility=Problem.VISIBLE_EVERYONE,
+            unlisted=False
         ).order_by('-id')
         return queryset
 

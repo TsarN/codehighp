@@ -23,6 +23,11 @@
     <a href="{% url 'help' %}" class="button {% if request.resolver_match.url_name == 'help' %}selected{% endif %}">
         Help
     </a>
+    {% if user.is_problemsetter %}
+    <a href="#" class="button">
+        Problemsetting
+    </a>
+    {% endif %}
     {% if user.is_staff %}
     <a href="/admin" class="button">
         Admin panel

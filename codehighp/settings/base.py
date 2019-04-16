@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
     'compete.apps.CompeteConfig',
-    'blog.apps.BlogConfig'
+    'blog.apps.BlogConfig',
+    'problemsetting.apps.ProblemsettingConfig'
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -138,8 +139,12 @@ with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
     COMPILERS = yaml.safe_load(f)
 COMPILERS_ENUM = tuple((k, v['name']) for k, v in COMPILERS.items())
 
+with open(os.path.join(DATA_DIR, 'invokers.yaml')) as f:
+    INVOKERS = yaml.safe_load(f)
+
 RUNS_ON_PROBLEM_PAGE = 50
 POSTS_PER_PAGE = 20
 ONLINE_TIMEOUT = 300
 
 QUOTA_PROBLEM_RUNS = 200
+GIT_REPO_URL = 'git.codehighp.site'
