@@ -749,7 +749,7 @@ a:hover, a:focus {
   --button-group-border-color: rgba(124, 124, 124, 0.54);
 }
 
-form {
+form:not(.no-style) {
   background: var(--form-back-color);
   color: var(--form-fore-color);
   border: 0.0625rem solid var(--form-border-color);

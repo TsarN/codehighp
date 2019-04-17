@@ -23,6 +23,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('compete/', include('compete.urls')),
     path('blog/', include('blog.urls')),
+    path('problemsetting/', include('problemsetting.urls')),
     path('', include('main.urls'))
 ]
 

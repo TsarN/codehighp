@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    SSH Keys - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+<h2>SSH keys</h2>
+<table>
+    <thead>
+        <tr>
+            <th class="fullwidth">Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for key in keys %}
+        <tr>
+            <td>{{ key }}</td>
+            <td>
+                <form method="POST" class="no-style">
+                    {% csrf_token %}
+                    <input type="hidden" name="key_name" value="{{ key }}" />
+                    <button type="submit" name="delete_key">Delete</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Add new key</h3>
+<form method="POST">
+    {% csrf_token %}
+    <p><b>Key name:</b></p>
+    <input type="text" name="key_name" placeholder="English letters / numbers / dashes" value="{{ key }}" style="width: 100%" /><br />
+    <textarea name="key" placeholder="Probably starts with ssh-rsa..." style="width: 100%;"></textarea>
+    <br />
+    <button type="submit" name="add_key">Add</button>
+</form>
+
+</main>
+{% endblock %}
