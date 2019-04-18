@@ -1,9 +1,69 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}
     User '{{ customuser.username }}' - CodeHighp
+{% endblock %}
+
+{% block scripts %}
+{% if customuser.is_rated %}
+<script src="{% static 'chart.js/dist/Chart.bundle.min.js' %}"></script>
+<script type="text/javascript">
+var ctx = document.getElementById('rating-changes').getContext('2d');
+var contestNames = {{ contest_names|safe }};
+var ratingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        datasets: [{
+            label: 'Rating of {{ customuser.username }}',
+            data: {{ data|safe }},
+            fill: false,
+            borderColor: '#777',
+            backgroundColor: 'white',
+            borderWidth: 3,
+            lineTension: 0
+        }]
+    },
+    options: {
+        scales: {
+            xAxes: [{
+                type: 'time',
+                time: {
+                    minUnit: 'day',
+                    round: 'day'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+
+                }
+            }]
+        },
+        aspectRatio: 3,
+        tooltips: {
+            callbacks: {
+                label: function(x) {
+                    return 'Rating: ' + x.yLabel;
+                },
+                title: function(x) {
+                    return contestNames[x[0].index];
+                }
+            },
+            labels: {
+                boxWidth: 0
+            }
+        },
+        legend: {
+            labels: {
+                boxWidth: 0
+            }
+        }
+    }
+});
+{% endif %}
+</script>
 {% endblock %}
 
 {% block body %}
@@ -46,6 +106,12 @@
                 Never logged in
             {% endif %}
         </p>
+
+    {% if customuser.is_rated %}
+        <div class="fullwidth">
+            <canvas id="rating-changes" style="border: 1px solid black"></canvas>
+        </div>
+    {% endif %}
 
         {% if user.id == customuser.id %}
             <hr />
