@@ -31,7 +31,8 @@ class ManageSSHKeysView(ProblemsetterAccessRequired, TemplateView):
         if 'add_key' in request.POST:
             key_name = request.POST.get('key_name')
             key = request.POST.get('key')
-            if re.match(r'^[a-zA-Z0-9\-]+$', key_name):
+            if re.match(r'^[a-zA-Z0-9\-]+$', key_name) and type(key) == str:
+                key = key.strip().replace('\n', ' ')
                 requests.post(GIT_SERVICE_URL + '/AddKey', headers=dict(username=self.request.user.username, name=key_name, key=key))
         return HttpResponseRedirect(request.path_info)
 

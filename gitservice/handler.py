@@ -24,13 +24,13 @@ def add_key(username, name, key):
         f.write(key)
     subprocess.run(['git', 'add', './keydir/' + name], cwd=REPO_DIR)
     subprocess.run(['git', 'commit', '-m', 'AddKey ' + name], cwd=REPO_DIR)
-    subprocess.run(['gitolite', 'push'], cwd=REPO_DIR)
+    subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
 
 
 def del_key(key):
     subprocess.run(['git', 'rm', '-f', './keydir/' + key], cwd=REPO_DIR)
     subprocess.run(['git', 'commit', '-m', 'DelKey ' + key], cwd=REPO_DIR)
-    subprocess.run(['gitolite', 'push'], cwd=REPO_DIR)
+    subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
 
 
 class GitService(BaseHTTPRequestHandler):
