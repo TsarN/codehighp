@@ -200,13 +200,14 @@ class Problem(models.Model):
     INVISIBLE = 'IN'
 
     name = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=16)
+    short_name = models.CharField(max_length=16, default='', blank=True)
     internal_name = models.CharField(max_length=255)
     contest = models.ForeignKey(Contest, null=True, blank=True, default=None, on_delete=models.SET_NULL)
     score = models.IntegerField(default=0)
     visibility = models.CharField(max_length=2, choices=VISIBILITY, default=AUTO_VISIBLE_EVERYONE)
     access = models.ManyToManyField(CustomUser, through='ProblemPermission')
     unlisted = models.BooleanField(blank=False, default=True)
+    error = models.TextField(default='', blank=True)
 
     def __str__(self):
         return "{}. {}".format(self.id, self.name)
@@ -214,7 +215,23 @@ class Problem(models.Model):
     def __repr__(self):
         return "<Problem id=%d name=%r>" % (self.id, self.name)
 
+    def get_access(self, user_id):
+        perm = list(ProblemPermission.objects.filter(problem_id=self.id, user_id=user_id))
+        if not perm:
+            return None
+        return perm[0].access
+
+    @property
+    def repo_url(self):
+        return '{}:/problems/{}.git'.format(settings.GIT_REPO_URL, self.internal_name)
+
     def is_visible(self, user_id):
+        if self.error:
+            return False
+        if ProblemPermission.objects.filter(problem_id=self.id, user_id=user_id).exists():
+            return True
+        if self.unlisted:
+            return False
         if self.visibility in [Problem.AUTO_VISIBLE_EVERYONE, Problem.AUTO_VISIBLE_PARTICIPANTS, Problem.INVISIBLE]:
             return False
         if self.visibility in [Problem.VISIBLE_EVERYONE]:

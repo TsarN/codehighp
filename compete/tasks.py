@@ -13,7 +13,7 @@ from iwatchdog.handler import Flock
 from util import get_tempfile_name
 
 
-@shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5}, default_retry_delay=5)
+@shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5}, default_retry_delay=5, queue='invoker')
 def invoke_run(run_id, prob_id, lang_id, src):
     try:
         run = Run.objects.get(pk=run_id)
@@ -78,7 +78,7 @@ def do_invoke_run(run):
     invoke_run.delay(run.pk, prob_id, lang_id, src)
 
 
-@shared_task
+@shared_task(queue='delayed')
 def update_contest_status(contest_id):
     try:
         contest = Contest.objects.get(pk=contest_id)

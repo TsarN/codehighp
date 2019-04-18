@@ -126,14 +126,6 @@ CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER = 'pickle'
 CELERY_IGNORE_RESULT = True
-CELERY_ROUTES = {
-    'compete.tasks.invoke_run': {
-        'queue': 'invoker'
-    },
-    'compete.tasks.update_contest_status': {
-        'queue': 'delayed'
-    }
-}
 
 with open(os.path.join(DATA_DIR, "compilers.yaml")) as f:
     COMPILERS = yaml.safe_load(f)
@@ -147,4 +139,3 @@ POSTS_PER_PAGE = 20
 ONLINE_TIMEOUT = 300
 
 QUOTA_PROBLEM_RUNS = 200
-GIT_REPO_URL = 'git.codehighp.site'

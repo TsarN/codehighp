@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Problemsetting - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+<a href="{% url 'ssh_keys' %}">Manage SSH keys</a><br />
+<h2>Problems</h2>
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>ID</th>
+            <th class="fullwidth">Name</th>
+            <th>Preview</th>
+            <th>Manage</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for problem in problems %}
+        <tr>
+            <td>{{ problem.id }}</td>
+            <td style="font-family: monospace">{{ problem.internal_name }}</td>
+            <td class="fullwidth">
+                {{ problem.name }}
+            </td>
+            <td>
+                {% if problem.error == "" %}
+                    <a href="{% url 'problem' problem.id %}">Preview</a>
+                {% else %}
+                    configuration&nbsp;error&nbsp;
+                {% endif %}
+            </td>
+            <td>
+                {% if problem.acc != "RD" %}
+                    <a href="{% url 'problem_manage' problem.id %}">Manage</a>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Create a problem</h3>
+<form method="POST">
+    {% csrf_token %}
+    <p><b>Problem ID:</b></p>
+    <input type="text" name="key_name" placeholder="Lowercase English letters / numbers / dashes" style="width: 100%" /><br />
+    <button type="submit" name="add_problem">Create</button>
+</form>
+
+</main>
+{% endblock %}

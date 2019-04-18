@@ -24,40 +24,46 @@ def add_key(username, name, key):
         f.write(key)
     subprocess.run(['git', 'add', './keydir/' + name], cwd=REPO_DIR)
     subprocess.run(['git', 'commit', '-m', 'AddKey ' + name], cwd=REPO_DIR)
-    subprocess.run(['git', 'push'], cwd=REPO_DIR)
+    subprocess.run(['gitolite', 'push'], cwd=REPO_DIR)
 
 
 def del_key(key):
     subprocess.run(['git', 'rm', '-f', './keydir/' + key], cwd=REPO_DIR)
     subprocess.run(['git', 'commit', '-m', 'DelKey ' + key], cwd=REPO_DIR)
-    subprocess.run(['git', 'push'], cwd=REPO_DIR)
+    subprocess.run(['gitolite', 'push'], cwd=REPO_DIR)
 
 
 class GitService(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/json')
-        self.end_headers()
-
         if self.path == '/GetUserKeys':
             username = self.headers.get('username')
             if username:
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/json')
+                self.end_headers()
                 self.wfile.write(json.dumps(get_keys(username)).encode())
                 return
-
-    def do_POST(self):
-        self.send_response(204)
+        self.send_response(404)
         self.end_headers()
 
+    def do_POST(self):
         if self.path == '/AddKey':
             username = self.headers.get('username')
             name = self.headers.get('name')
             key = self.headers.get('key')
             if username and name and key:
                 add_key(username, name, key)
+                self.send_response(204)
+                self.end_headers()
                 return
 
         if self.path == '/DelKey':
             key = self.headers.get('key')
             if key:
                 del_key(key)
+                self.send_response(204)
+                self.end_headers()
+                return
+
+        self.send_response(404)
+        self.end_headers()

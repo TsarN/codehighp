@@ -28,16 +28,20 @@ def update_problem(problem):
     with open(lock_path) as f:
         with Flock(f):
             subprocess.run(['git', 'pull'], cwd=os.path.join(PROBLEM_DIR, problem))
-            build_problem(problem)
+            return build_problem(problem)
 
 
 class InvokerWatchdog(BaseHTTPRequestHandler):
     def do_POST(self):
-        self.send_response(204)
-        self.end_headers()
-
         if self.path == '/UpdateProblem':
             problem = self.headers.get('problem')
             if problem:
-                update_problem(problem)
+                res = update_problem(problem) or ''
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(res.encode())
                 return
+
+        self.send_response(404)
+        self.end_headers()

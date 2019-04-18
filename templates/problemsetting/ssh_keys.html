@@ -6,6 +6,7 @@
 
 {% block body %}
 <main class="fullwidth">
+<p><a href="{% url 'problemsetting' %}">&laquo; back</a></p>
 <h2>SSH keys</h2>
 <table>
     <thead>
@@ -34,7 +35,7 @@
 <form method="POST">
     {% csrf_token %}
     <p><b>Key name:</b></p>
-    <input type="text" name="key_name" placeholder="English letters / numbers / dashes" value="{{ key }}" style="width: 100%" /><br />
+    <input type="text" name="key_name" placeholder="English letters / numbers / dashes" style="width: 100%" /><br />
     <textarea name="key" placeholder="Probably starts with ssh-rsa..." style="width: 100%;"></textarea>
     <br />
     <button type="submit" name="add_key">Add</button>

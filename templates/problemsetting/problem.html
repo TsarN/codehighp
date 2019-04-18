@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ problem.id }}. {{ problem.name }} - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+<p><a href="{% url 'problemsetting' %}">&laquo; back</a></p>
+<pre>
+Problem ID: {{ problem.internal_name }}
+Repository URL: {{ problem.repo_url }}
+</pre>
+<form method="POST" class="no-style">
+    {% csrf_token %}
+    <button type="submit" name="update">Update problem from git</button>
+    <!--<button type="submit" name="delete">Delete problem</button>-->
+</form>
+
+{% if problem.error %}
+<h3>Problem configuration is invalid</h3>
+<pre>{{ problem.error }}</pre>
+{% endif %}
+
+<h3>Permissions</h3>
+<table>
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Access</th>
+            {% if is_owner %}
+                <th></th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for perm in permissions %}
+            <tr>
+                <td>{{ perm.user.html_link }}</td>
+                <td>
+                    {{ perm.get_access_display }}
+                </td>
+                {% if is_owner %}
+                <td>
+                    {% if perm.access != 'OW' %}
+                    <form method="POST" class="no-style">
+                        {% csrf_token %}
+                        <input type="hidden" name="user_id" value="{{ perm.user_id }}" />
+                        <button type="submit" name="revoke">Revoke</button>
+                        {% if perm.access != 'RD' %}
+                            <button type="submit" name="read">Make read-only</button>
+                        {% endif %}
+                        {% if perm.access != 'WR' %}
+                            <button type="submit" name="read">Make read-write</button>
+                        {% endif %}
+                    </form>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</main>
+{% endblock %}
