@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.views.generic import FormView, TemplateView
 
 from codehighp.settings.debug import GIT_SERVICE_URL
@@ -108,8 +109,9 @@ class ProblemManageView(ProblemsetterAccessRequired, FormView):
             if form.is_valid():
                 form.save()
         if 'delete' in request.POST:
-            delete_problem.delay(self.problem.id)
+            delete_problem.delay(self.problem.internal_name)
             self.problem.delete()
+            return HttpResponseRedirect(reverse('problemsetting'))
         if 'add_developer' in request.POST and self.permission == ProblemPermission.OWNER:
             return super(ProblemManageView, self).post(request, *args, **kwargs)
         return HttpResponseRedirect(request.path_info)

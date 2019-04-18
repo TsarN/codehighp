@@ -39,6 +39,7 @@ def del_problem(problem):
     with open(lock_path) as f:
         with Flock(f):
             shutil.rmtree(os.path.join(PROBLEM_DIR, problem))
+    os.unlink(lock_path)
 
 
 class InvokerWatchdog(BaseHTTPRequestHandler):
