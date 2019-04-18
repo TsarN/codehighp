@@ -81,6 +81,9 @@ class GitService(BaseHTTPRequestHandler):
             data = self.rfile.read(int(self.headers['Content-Length']))
             if data and problem:
                 set_permissions(problem, json.loads(data))
+                self.send_response(204)
+                self.end_headers()
+                return
 
         self.send_response(404)
         self.end_headers()

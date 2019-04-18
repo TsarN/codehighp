@@ -230,9 +230,10 @@ class Problem(models.Model):
         for perm in perms:
             access = 'R' if perm.access == ProblemPermission.READ else 'RW+'
             data.append(dict(access=access, user=perm.user.username))
-        requests.post(settings.GIT_SERVICE_URL + '/SetPermissions',
+        res = requests.post(settings.GIT_SERVICE_URL + '/SetPermissions',
                       headers=dict(problem=self.internal_name),
-                      json=data)
+                      json=data, auth=('git', settings.GIT_SERVICE_PASSWORD))
+        print(res, res.text)
 
     @property
     def repo_url(self):
