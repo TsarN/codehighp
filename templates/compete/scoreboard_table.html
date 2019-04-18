@@ -5,7 +5,10 @@
             <th>Who</th>
             <th>Score</th>
             {% for prob in problems %}
-                <th>{{ prob.short_name }}</th>
+                <th>
+                    <a href="{% url 'problem' prob.id %}">{{ prob.short_name }}</a><br />
+                    <small>{{ prob.score }}</small>
+                </th>
             {% endfor %}
         </tr>
     </thead>

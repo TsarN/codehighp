@@ -1,6 +1,6 @@
-<tr>
+<tr{% if me %} class="highlighted"{% endif %}>
     <td>{{ place }}</td>
-    <td style="width: 50%">{{ user.html_link }}</td>
+    <td style="width: 50%">{{ user.html_link_country }}</td>
     <td>
         {{ score }}
         <small>/ {{ score2 }}</small>

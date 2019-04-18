@@ -7,6 +7,7 @@ from compete.models import UserProblemStatus, ContestRegistration, Problem
 
 @attr.s
 class ClassicScoreboardRow:
+    me = attr.ib()
     place = attr.ib()
     user = attr.ib()
     score = attr.ib()
@@ -15,6 +16,7 @@ class ClassicScoreboardRow:
 
     def render_to_html(self):
         return render_to_string('compete/scoreboard_row.html', dict(
+            me=self.me,
             place=self.place,
             user=self.user,
             score=self.score,
@@ -24,10 +26,11 @@ class ClassicScoreboardRow:
 
 
 class ClassicScoreboard:
-    def __init__(self, contest_id):
+    def __init__(self, contest_id, user_id):
         self.rows = []
         self.problems = []
         self.contest_id = contest_id
+        self.user_id = user_id
 
     def collect(self):
         with atomic():
@@ -59,6 +62,7 @@ class ClassicScoreboard:
 
         for i, reg in enumerate(regs):
             self.rows.append(ClassicScoreboardRow(
+                me=reg.user_id == self.user_id,
                 place=places[i] + 1,
                 user=reg.user,
                 score=reg.score,

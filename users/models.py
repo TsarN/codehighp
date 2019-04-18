@@ -16,13 +16,30 @@ class CustomUser(AbstractUser):
 
     @property
     def html_link(self):
-        css_class = "user-link"
+        return self.get_html_link(self.username)
+
+    @property
+    def html_link_country(self):
+        return self.get_html_link('<i class="{}" title="{}"></i> {}'.format(
+            self.country.flag_css, self.country.name, self.username
+        ))
+
+    @property
+    def rank(self):
         if self.is_superuser:
-            css_class = "admin-link"
-        return mark_safe('<a href="{}" class="{}">{}</a>'.format(
+            return "Administrator"
+        return "Unrated user"
+
+    def get_html_link(self, title):
+        css_class = ""
+        if self.is_superuser:
+            css_class = "rated-user-link admin-link"
+        return mark_safe('<a href="{}" class="user-link {}" title="{} {}">{}</a>'.format(
             reverse('profile', args=(self.username,)),
             css_class,
-            self.username
+            self.rank,
+            self.username,
+            title
         ))
 
     @property

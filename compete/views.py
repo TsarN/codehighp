@@ -107,7 +107,7 @@ class ContestScoreboardView(TemplateView):
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         reg = contest.ensure_can_access(self.request.user.id)
 
-        scoreboard = ClassicScoreboard(contest.id)
+        scoreboard = ClassicScoreboard(contest.id, self.request.user.id if self.request.user.is_authenticated else None)
         scoreboard.collect()
 
         context['contest'] = contest

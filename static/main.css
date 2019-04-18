@@ -57,11 +57,15 @@ th {
 }
 
 a.admin-link {
-    font-weight: bold;
     color: black;
 }
 
 a.user-link {
+    text-decoration: none;
+    color: black;
+}
+
+a.rated-user-link {
     font-weight: bold;
 }
 
@@ -153,4 +157,8 @@ table.compressed * {
 
 .center {
     text-align: center;
+}
+
+tr.highlighted {
+    background-color: #cef;
 }
