@@ -34,7 +34,7 @@ def del_key(key):
 
 
 def set_permissions(problem, permissions):
-    path = os.path.join(REPO_DIR, 'problems', problem + '.conf')
+    path = os.path.join(REPO_DIR, 'conf', 'problems', problem + '.conf')
     with open(path, 'w') as f:
         print("repo problems/{}".format(problem), file=f)
         for perm in permissions:
