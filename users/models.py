@@ -14,6 +14,11 @@ class CustomUser(AbstractUser):
     country = CountryField(blank=True, null=True, default=None)
     is_problemsetter = models.BooleanField(blank=True, default=False)
 
+    is_rated = models.BooleanField(default=False, blank=True)
+    rating = models.IntegerField(default=1500)
+    deviation = models.IntegerField(default=350)
+    volatility = models.FloatField(default=0.06)
+
     @property
     def html_link(self):
         return self.get_html_link(self.username)

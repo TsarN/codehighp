@@ -2,7 +2,7 @@ import attr
 from django.db.transaction import atomic
 from django.template.loader import render_to_string
 
-from compete.models import UserProblemStatus, ContestRegistration, Problem
+from compete.models import UserProblemStatus, ContestRegistration, Problem, Run
 
 
 @attr.s
@@ -15,13 +15,19 @@ class ClassicScoreboardRow:
     problems = attr.ib()
 
     def render_to_html(self):
+        probs = [
+            dict(score=round(x.score * x.problem.score / Run.SCORE_DIVISOR),
+                 score2=round(x.score2 * x.problem.score / Run.SCORE_DIVISOR)) if x else None
+            for x in self.problems
+         ]
+
         return render_to_string('compete/scoreboard_row.html', dict(
             me=self.me,
             place=self.place,
             user=self.user,
             score=self.score,
             score2=self.score2,
-            problems=self.problems
+            problems=probs
         ))
 
 
@@ -43,7 +49,8 @@ class ClassicScoreboard:
 
             ps = list(UserProblemStatus.objects
                       .filter(problem_id__in=[x.id for x in probs],
-                              user_id__in=[x.user_id for x in regs]))
+                              user_id__in=[x.user_id for x in regs])
+                      .select_related('problem'))
 
         self.problems = probs
         prob_status = {}

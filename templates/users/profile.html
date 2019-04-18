@@ -16,6 +16,14 @@
             {{ customuser.username }}
         </h2>
 
+        <p>
+            {% if customuser.is_rated %}
+                <b>Rating: </b> {{ customuser.rating }}
+            {% else %}
+                <b>Unrated</b>
+            {% endif %}
+        </p>
+
         <p>{{ customuser.get_full_name }}</p>
         {% if customuser.country %}
             <p>

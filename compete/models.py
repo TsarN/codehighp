@@ -473,3 +473,19 @@ class Run(models.Model):
             os.remove(self.log_path)
         except:
             pass
+
+
+class RatingChange(models.Model):
+    class Meta:
+        unique_together = (('user', 'contest'),)
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    contest = models.ForeignKey(Contest, on_delete=models.CASCADE)
+
+    old_rating = models.IntegerField(default=0)
+    old_deviation = models.IntegerField(default=0)
+    old_volatility = models.FloatField(default=0)
+
+    new_rating = models.IntegerField(default=0)
+    new_deviation = models.IntegerField(default=0)
+    new_volatility = models.FloatField(default=0)
