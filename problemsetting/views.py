@@ -10,8 +10,8 @@ from django.views.generic import FormView, TemplateView
 
 from codehighp.settings.debug import GIT_SERVICE_URL
 from compete.models import Problem, ProblemPermission
-from problemsetting.forms import AddProblemDeveloperForm
-from problemsetting.tasks import update_problem_from_git
+from problemsetting.forms import AddProblemDeveloperForm, ProblemNameForm, ProblemCreateForm
+from problemsetting.tasks import update_problem_from_git, delete_problem
 from users.models import CustomUser
 
 
@@ -53,8 +53,9 @@ class ManageSSHKeysView(ProblemsetterAccessRequired, TemplateView):
         return context
 
 
-class MainView(ProblemsetterAccessRequired, TemplateView):
+class MainView(ProblemsetterAccessRequired, FormView):
     template_name = 'problemsetting/main.html'
+    form_class = ProblemCreateForm
 
     def get_context_data(self, **kwargs):
         context = super(MainView, self).get_context_data(**kwargs)
@@ -64,6 +65,10 @@ class MainView(ProblemsetterAccessRequired, TemplateView):
             prob.acc = perms[prob.id].access
         context['problems'] = problems
         return context
+
+    def form_valid(self, form):
+        form.save(self.request.user.id)
+        return HttpResponseRedirect(self.request.path_info)
 
 
 class ProblemManageView(ProblemsetterAccessRequired, FormView):
@@ -98,6 +103,13 @@ class ProblemManageView(ProblemsetterAccessRequired, FormView):
                     perm.access = ProblemPermission.WRITE
                     perm.save()
                 self.problem.update_git_permissions()
+        if 'rename' in request.POST:
+            form = ProblemNameForm(request.POST, instance=self.problem)
+            if form.is_valid():
+                form.save()
+        if 'delete' in request.POST:
+            delete_problem.delay(self.problem.id)
+            self.problem.delete()
         if 'add_developer' in request.POST and self.permission == ProblemPermission.OWNER:
             return super(ProblemManageView, self).post(request, *args, **kwargs)
         return HttpResponseRedirect(request.path_info)
@@ -107,6 +119,7 @@ class ProblemManageView(ProblemsetterAccessRequired, FormView):
         context['problem'] = self.problem
         context['permissions'] = self.permissions
         context['is_owner'] = self.permission == ProblemPermission.OWNER
+        context['rename_form'] = ProblemNameForm(initial=dict(name=self.problem.name))
         return context
 
     def get_form_kwargs(self):

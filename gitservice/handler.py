@@ -2,10 +2,11 @@ import json
 import os
 import re
 import subprocess
+import shutil
 
 from http.server import BaseHTTPRequestHandler
 
-from gitservice.config import REPO_DIR
+from gitservice.config import REPO_DIR, PROBLEMS_DIR
 
 
 def get_keys(username):
@@ -44,6 +45,13 @@ def set_permissions(problem, permissions):
     subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
 
 
+def del_problem(problem):
+    subprocess.run(['git', 'rm', '-f', os.path.join(REPO_DIR, 'conf', 'problems', problem + '.conf')], cwd=REPO_DIR)
+    subprocess.run(['git', 'commit', '-m', 'DelProblem ' + problem], cwd=REPO_DIR)
+    subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
+    shutil.rmtree(os.path.join(PROBLEMS_DIR, problem + '.git'), ignore_errors=True)
+
+
 class GitService(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/GetUserKeys':
@@ -72,6 +80,14 @@ class GitService(BaseHTTPRequestHandler):
             key = self.headers.get('key')
             if key:
                 del_key(key)
+                self.send_response(204)
+                self.end_headers()
+                return
+
+        if self.path == '/DelProblem':
+            problem = self.headers.get('problem')
+            if problem:
+                del_problem(problem)
                 self.send_response(204)
                 self.end_headers()
                 return

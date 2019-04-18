@@ -1,8 +1,11 @@
+import re
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from django import forms
+from django.db.transaction import atomic
 
-from compete.models import ProblemPermission
+from compete.models import ProblemPermission, Problem
 from users.models import CustomUser
 
 
@@ -42,3 +45,40 @@ class AddProblemDeveloperForm(forms.Form):
     def add_developer(self):
         access = self.cleaned_data['access']
         ProblemPermission.objects.create(user_id=self.user_id, problem_id=self.prob_id, access=access)
+
+
+class ProblemNameForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('name',)
+
+    def __init__(self, *args, **kwargs):
+        super(ProblemNameForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('rename', 'Submit'))
+
+
+class ProblemCreateForm(forms.Form):
+    internal_name = forms.CharField(label='Problem ID')
+
+    def __init__(self, *args, **kwargs):
+        super(ProblemCreateForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('creaate', 'Submit'))
+
+    def clean_internal_name(self):
+        id = self.cleaned_data['internal_name']
+        if Problem.objects.filter(internal_name=id).exists():
+            raise forms.ValidationError('This ID is taken')
+        if not re.match(r'^[a-z0-9][a-z0-9\-]*$', id):
+            raise forms.ValidationError('Lowercase English letters, numbers and dashes only. Can\'t start with a dash.')
+        return id
+
+    def save(self, user_id):
+        id = self.cleaned_data['internal_name']
+        with atomic():
+            prob = Problem(internal_name=id, name='Unnamed problem {}'.format(id))
+            prob.error = "Problem is not uploaded"
+            prob.save()
+            ProblemPermission.objects.create(problem_id=prob.id, user_id=user_id, access=ProblemPermission.OWNER)
+        prob.update_git_permissions()

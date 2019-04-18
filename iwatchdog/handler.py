@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from fcntl import flock, LOCK_EX, LOCK_UN
 from http.server import BaseHTTPRequestHandler
@@ -31,6 +32,15 @@ def update_problem(problem):
             return build_problem(problem)
 
 
+def del_problem(problem):
+    lock_path = os.path.join(LOCK_DIR, problem + '.lock')
+    if not os.path.exists(lock_path):
+        return
+    with open(lock_path) as f:
+        with Flock(f):
+            shutil.rmtree(os.path.join(PROBLEM_DIR, problem))
+
+
 class InvokerWatchdog(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/UpdateProblem':
@@ -41,6 +51,14 @@ class InvokerWatchdog(BaseHTTPRequestHandler):
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
                 self.wfile.write(res.encode())
+                return
+
+        if self.path == '/DelProblem':
+            problem = self.headers.get('problem')
+            if problem:
+                del_problem(problem)
+                self.send_response(204)
+                self.end_headers()
                 return
 
         self.send_response(404)

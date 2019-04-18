@@ -349,6 +349,8 @@ class UserProblemStatus(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         super(UserProblemStatus, self).save(force_insert, force_update, using, update_fields)
+        if not self.problem.contest_id:
+            return
 
         with atomic():
             if self.problem.contest.status != Contest.RUNNING:

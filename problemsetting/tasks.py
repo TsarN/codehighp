@@ -20,3 +20,12 @@ def update_problem_from_git(problem_id):
     else:
         problem.error = ""
     problem.save()
+
+
+@shared_task(queue='manager')
+def delete_problem(problem_id):
+    requests.post(settings.GIT_SERVICE_URL + '/DelProblem', headers=dict(problem=problem_id),
+                  auth=('git', settings.GIT_SERVICE_PASSWORD))
+    for invoker in settings.INVOKERS:
+        requests.post(invoker['watchdog'] + '/DelProblem',
+                      headers=dict(problem=problem_id))

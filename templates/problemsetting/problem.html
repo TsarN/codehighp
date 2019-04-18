@@ -10,18 +10,24 @@
 <p><a href="{% url 'problemsetting' %}">&laquo; back</a></p>
 <pre>
 Problem ID: {{ problem.internal_name }}
+Problem name: {{ problem.name }}
 Repository URL: {{ problem.repo_url }}
 </pre>
 <form method="POST" class="no-style">
     {% csrf_token %}
     <button type="submit" name="update">Update problem from git</button>
-    <!--<button type="submit" name="delete">Delete problem</button>-->
+    {% if is_owner %}
+    <button type="submit" name="delete">Delete problem</button>
+    {% endif %}
 </form>
 
 {% if problem.error %}
 <h3>Problem configuration is invalid</h3>
 <pre>{{ problem.error }}</pre>
 {% endif %}
+
+<h3>Change problem name</h3>
+{% crispy rename_form %}
 
 <h3>Permissions</h3>
 <table>

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block title %}
     Problemsetting - CodeHighp
@@ -44,12 +45,7 @@
 </table>
 
 <h3>Create a problem</h3>
-<form method="POST">
-    {% csrf_token %}
-    <p><b>Problem ID:</b></p>
-    <input type="text" name="key_name" placeholder="Lowercase English letters / numbers / dashes" style="width: 100%" /><br />
-    <button type="submit" name="add_problem">Create</button>
-</form>
+{% crispy form %}
 
 </main>
 {% endblock %}
