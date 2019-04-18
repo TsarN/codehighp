@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordChangeDoneView, PasswordResetView, \
     PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.core.serializers.json import DjangoJSONEncoder
@@ -7,6 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
 
 from compete.models import RatingChange
+from compete.rating import get_rank
 from users.forms import CustomAuthenticationForm, CustomUserCreationForm, CustomPasswordChangeForm, \
     CustomPasswordResetForm, CustomSetPasswordForm
 from users.models import CustomUser
@@ -31,19 +33,25 @@ class UserProfileView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(UserProfileView, self).get_context_data(**kwargs)
 
-        ratings = RatingChange.objects\
-            .filter(user_id=self.object.id)\
-            .select_related('contest')
+        ratings = list(RatingChange.objects
+                       .filter(user_id=self.object.id)
+                       .select_related('contest'))
 
         contest_names = ['(Joined CodeHighp)']
         data = [dict(x=self.object.date_joined, y=1500)]
+        color = ['white']
 
         for rating in ratings:
             contest_names.append(rating.contest.name)
-            data.append(dict(x=rating.contest.start_date, y=rating.new_rating))
+            data.append(dict(x=rating.contest.start_date + rating.contest.duration, y=rating.new_rating))
+            color.append(get_rank(rating.new_rating)[2])
 
         context['contest_names'] = json.dumps(contest_names)
         context['data'] = json.dumps(data, cls=DjangoJSONEncoder)
+        context['color'] = json.dumps(color, cls=DjangoJSONEncoder)
+        context['ranks'] = json.dumps(settings.RANKS)
+        context['min'] = min([1500] + [r.new_rating for r in ratings]) - 100
+        context['max'] = max([1500] + [r.new_rating for r in ratings]) + 100
 
         return context
 

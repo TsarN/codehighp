@@ -12,6 +12,36 @@
 <script src="{% static 'chart.js/dist/Chart.bundle.min.js' %}"></script>
 <script type="text/javascript">
 var ctx = document.getElementById('rating-changes').getContext('2d');
+var originalLineDraw = Chart.controllers.line.prototype.draw;
+var ranks = {{ ranks|safe }};
+Chart.helpers.extend(Chart.controllers.line.prototype, {
+    draw: function() {
+        var chart = this.chart;
+        var ctx = chart.chart.ctx;
+
+        for (var i = 0; i < ranks.length; ++i) {
+            var yRangeBegin = (i === 0) ? -99999 : ranks[i - 1][1];
+            var yRangeEnd = ranks[i][1];
+
+            var xaxis = chart.scales['x-axis-0'];
+            var yaxis = chart.scales['y-axis-0'];
+
+            if ((yRangeEnd < yaxis.start) || (yRangeBegin > yaxis.end)) continue;
+
+            yRangeBegin = Math.max(yRangeBegin, yaxis.start);
+            yRangeEnd = Math.min(yRangeEnd, yaxis.end);
+
+            var yRangeBeginPixel = yaxis.getPixelForValue(yRangeBegin);
+            var yRangeEndPixel = yaxis.getPixelForValue(yRangeEnd);
+
+            ctx.save();
+
+            ctx.fillStyle = ranks[i][2] + '30';
+            ctx.fillRect(xaxis.left, Math.min(yRangeBeginPixel, yRangeEndPixel), xaxis.right - xaxis.left, Math.max(yRangeBeginPixel, yRangeEndPixel) - Math.min(yRangeBeginPixel, yRangeEndPixel));
+            ctx.restore();
+        }
+        originalLineDraw.apply(this, arguments);
+}});
 var contestNames = {{ contest_names|safe }};
 var ratingChart = new Chart(ctx, {
     type: 'line',
@@ -21,7 +51,7 @@ var ratingChart = new Chart(ctx, {
             data: {{ data|safe }},
             fill: false,
             borderColor: '#777',
-            backgroundColor: 'white',
+            backgroundColor: {{ color|safe }},
             borderWidth: 3,
             lineTension: 0
         }]
@@ -37,7 +67,8 @@ var ratingChart = new Chart(ctx, {
             }],
             yAxes: [{
                 ticks: {
-
+                    suggestedMin: {{ min }},
+                    suggestedMax: {{ max }}
                 }
             }]
         },
@@ -78,7 +109,7 @@ var ratingChart = new Chart(ctx, {
 
         <p>
             {% if customuser.is_rated %}
-                <b>Rating: </b> {{ customuser.rating }}
+                <b style="color: {{ customuser.color }}">{{ customuser.rank }}</b> with rating {{ customuser.rating }}
             {% else %}
                 <b>Unrated</b>
             {% endif %}

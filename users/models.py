@@ -1,5 +1,6 @@
 import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
@@ -31,19 +32,33 @@ class CustomUser(AbstractUser):
 
     @property
     def rank(self):
+        from compete.rating import get_rank
         if self.is_superuser:
             return "Administrator"
-        return "Unrated user"
+        if not self.is_rated:
+            return "Unrated user"
+        return get_rank(self.rating)[0]
+
+    @property
+    def color(self):
+        from compete.rating import get_rank
+        return get_rank(self.rating)[2]
 
     def get_html_link(self, title):
+        from compete.rating import get_rank
         css_class = ""
+        style = ""
         if self.is_superuser:
-            css_class = "rated-user-link admin-link"
-        return mark_safe('<a href="{}" class="user-link {}" title="{} {}">{}</a>'.format(
+            css_class = " rated-user-link admin-link"
+        elif self.is_rated:
+            css_class = " rated-user-link"
+            style = 'style="color: {}"'.format(get_rank(self.rating)[2])
+        return mark_safe('<a href="{}" class="user-link{}" title="{} {}" {}>{}</a>'.format(
             reverse('profile', args=(self.username,)),
             css_class,
             self.rank,
             self.username,
+            style,
             title
         ))
 

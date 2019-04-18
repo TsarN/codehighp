@@ -3,6 +3,7 @@
 import math
 
 import attr
+from django.conf import settings
 from django.db.transaction import atomic
 
 from compete.models import ContestRegistration, RatingChange
@@ -141,3 +142,10 @@ def update_contest_rating(contest_id):
     with atomic():
         for change in changes:
             change.save()
+
+
+def get_rank(rating):
+    for rank, upper, color in settings.RANKS:
+        if rating < upper:
+            return rank, upper, color
+    return settings.RANKS[-1]

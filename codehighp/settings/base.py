@@ -139,3 +139,14 @@ POSTS_PER_PAGE = 20
 ONLINE_TIMEOUT = 300
 
 QUOTA_PROBLEM_RUNS = 200
+
+RANKS = (
+    ('Novice', 1200, '#888888'),
+    ('Pupil', 1350, '#008800'),
+    ('Specialist', 1500, '#008800'),
+    ('Expert', 1700, '#000088'),
+    ('Candidate master', 1900, '#880088'),
+    ('Master', 2050, '#ff8800'),
+    ('Advanced master', 2200, '#ff8800'),
+    ('Grandmaster', 99999, '#880000'),
+)
