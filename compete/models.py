@@ -4,6 +4,7 @@ import gzip
 import struct
 
 import markdown2
+import requests
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.conf import settings
@@ -222,7 +223,16 @@ class Problem(models.Model):
         return perm[0].access
 
     def update_git_permissions(self):
-        pass
+        perms = ProblemPermission.objects\
+            .filter(problem_id=self.id)\
+            .select_related('user')
+        data = []
+        for perm in perms:
+            access = 'R' if perm.access == ProblemPermission.READ else 'RW+'
+            data.append(dict(access=access, user=perm.user.username))
+        requests.post(settings.GIT_SERVICE_URL + '/SetPermissions',
+                      headers=dict(problem=self.internal_name),
+                      json=data)
 
     @property
     def repo_url(self):

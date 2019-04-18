@@ -33,6 +33,17 @@ def del_key(key):
     subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
 
 
+def set_permissions(problem, permissions):
+    path = os.path.join(REPO_DIR, 'problems', problem + '.conf')
+    with open(path, 'w') as f:
+        print("repo problems/{}".format(problem), file=f)
+        for perm in permissions:
+            print("    {} = {}".format(perm['access'], perm['user']), file=f)
+    subprocess.run(['git', 'add', path], cwd=REPO_DIR)
+    subprocess.run(['git', 'commit', '-m', 'SetPermissions ' + problem], cwd=REPO_DIR)
+    subprocess.run(['/home/git/bin/gitolite', 'push'], cwd=REPO_DIR)
+
+
 class GitService(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/GetUserKeys':
@@ -64,6 +75,12 @@ class GitService(BaseHTTPRequestHandler):
                 self.send_response(204)
                 self.end_headers()
                 return
+
+        if self.path == '/SetPermissions':
+            problem = self.headers.get('problem')
+            data = self.rfile.read(int(self.headers['Content-Length']))
+            if data and problem:
+                set_permissions(problem, json.loads(data))
 
         self.send_response(404)
         self.end_headers()
