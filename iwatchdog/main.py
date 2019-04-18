@@ -21,7 +21,7 @@ def init():
 
 
 def listen(port):
-    server = HTTPServer(('', port), InvokerWatchdog)
+    server = HTTPServer(('127.0.0.1', port), InvokerWatchdog)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -5,7 +5,7 @@ from gitservice.handler import GitService
 
 
 def listen(port):
-    server = HTTPServer(('', port), GitService)
+    server = HTTPServer(('127.0.0.1', port), GitService)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
