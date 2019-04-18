@@ -221,6 +221,9 @@ class Problem(models.Model):
             return None
         return perm[0].access
 
+    def update_git_permissions(self):
+        pass
+
     @property
     def repo_url(self):
         return '{}:/problems/{}.git'.format(settings.GIT_REPO_URL, self.internal_name)

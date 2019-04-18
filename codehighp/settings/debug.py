@@ -32,4 +32,5 @@ MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 INTERNAL_IPS = ['127.0.0.1']
 
 GIT_SERVICE_URL = 'https://git.tsarn.website:7443'
-GIT_REPO_URL = 'git@185.246.153.37'
+GIT_SERVICE_PASSWORD = '5JzGmmvNL40xDis5exx1XoWa5WJSChE3'
+GIT_REPO_URL = 'git@git.tsarn.website'

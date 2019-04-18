@@ -10,7 +10,9 @@ from django.views.generic import FormView, TemplateView
 
 from codehighp.settings.debug import GIT_SERVICE_URL
 from compete.models import Problem, ProblemPermission
+from problemsetting.forms import AddProblemDeveloperForm
 from problemsetting.tasks import update_problem_from_git
+from users.models import CustomUser
 
 
 class ProblemsetterAccessRequired(UserPassesTestMixin):
@@ -27,17 +29,21 @@ class ManageSSHKeysView(ProblemsetterAccessRequired, TemplateView):
         if 'delete_key' in request.POST:
             key = request.POST.get('key_name')
             if key in self.get_keys():
-                requests.post(GIT_SERVICE_URL + '/DelKey', headers=dict(key=key))
+                requests.post(GIT_SERVICE_URL + '/DelKey', headers=dict(key=key), auth=('git', settings.GIT_SERVICE_PASSWORD))
         if 'add_key' in request.POST:
             key_name = request.POST.get('key_name')
             key = request.POST.get('key')
             if re.match(r'^[a-zA-Z0-9\-]+$', key_name) and type(key) == str:
                 key = key.strip().replace('\n', ' ')
-                requests.post(GIT_SERVICE_URL + '/AddKey', headers=dict(username=self.request.user.username, name=key_name, key=key))
+                requests.post(GIT_SERVICE_URL + '/AddKey',
+                              headers=dict(username=self.request.user.username, name=key_name, key=key),
+                              auth=('git', settings.GIT_SERVICE_PASSWORD))
         return HttpResponseRedirect(request.path_info)
 
     def get_keys(self):
-        keys = requests.get(GIT_SERVICE_URL + '/GetUserKeys', headers=dict(username=self.request.user.username)).json()
+        keys = requests.get(GIT_SERVICE_URL + '/GetUserKeys',
+                            headers=dict(username=self.request.user.username),
+                            auth=('git', settings.GIT_SERVICE_PASSWORD)).json()
         return keys
 
     def get_context_data(self, **kwargs):
@@ -60,8 +66,9 @@ class MainView(ProblemsetterAccessRequired, TemplateView):
         return context
 
 
-class ProblemManageView(ProblemsetterAccessRequired, TemplateView):
+class ProblemManageView(ProblemsetterAccessRequired, FormView):
     template_name = 'problemsetting/problem.html'
+    form_class = AddProblemDeveloperForm
 
     def dispatch(self, request, *args, **kwargs):
         self.problem = get_object_or_404(Problem, pk=kwargs.get('pk'))
@@ -78,6 +85,21 @@ class ProblemManageView(ProblemsetterAccessRequired, TemplateView):
             self.problem.error = "Updating... Please wait."
             self.problem.save()
             update_problem_from_git.delay(self.problem.id)
+        if any(act in request.POST for act in ['revoke', 'read', 'write']) and self.permission == ProblemPermission.OWNER:
+            user = get_object_or_404(CustomUser, pk=request.POST.get('user_id'))
+            perm = get_object_or_404(ProblemPermission, user_id=user.id, problem_id=self.problem.id)
+            if perm.access != ProblemPermission.OWNER:
+                if 'revoke' in request.POST:
+                    perm.delete()
+                elif 'read' in request.POST:
+                    perm.access = ProblemPermission.READ
+                    perm.save()
+                elif 'write' in request.POST:
+                    perm.access = ProblemPermission.WRITE
+                    perm.save()
+                self.problem.update_git_permissions()
+        if 'add_developer' in request.POST and self.permission == ProblemPermission.OWNER:
+            return super(ProblemManageView, self).post(request, *args, **kwargs)
         return HttpResponseRedirect(request.path_info)
 
     def get_context_data(self, **kwargs):
@@ -86,3 +108,13 @@ class ProblemManageView(ProblemsetterAccessRequired, TemplateView):
         context['permissions'] = self.permissions
         context['is_owner'] = self.permission == ProblemPermission.OWNER
         return context
+
+    def get_form_kwargs(self):
+        kwargs = super(ProblemManageView, self).get_form_kwargs()
+        kwargs['prob_id'] = self.problem.id
+        return kwargs
+
+    def form_valid(self, form):
+        form.add_developer()
+        self.problem.update_git_permissions()
+        return HttpResponseRedirect(self.request.path_info)
