@@ -13,6 +13,7 @@ from django.views.generic.detail import SingleObjectMixin
 from compete.forms import RunSubmitForm, ContestRegistrationForm
 from compete.invoke import VERDICTS
 from compete.models import Problem, Run, Contest, ContestRegistration, UserProblemStatus
+from compete.scoreboard import ClassicScoreboard
 
 
 class ContestListView(TemplateView):
@@ -93,6 +94,24 @@ class ContestView(TemplateView):
 
         context['contest'] = contest
         context['problems'] = problems
+        if reg:
+            context['registration'] = reg
+        return context
+
+
+class ContestScoreboardView(TemplateView):
+    template_name = 'compete/contest_scoreboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ContestScoreboardView, self).get_context_data(**kwargs)
+        contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        reg = contest.ensure_can_access(self.request.user.id)
+
+        scoreboard = ClassicScoreboard(contest.id)
+        scoreboard.collect()
+
+        context['contest'] = contest
+        context['scoreboard'] = scoreboard.render_to_html()
         if reg:
             context['registration'] = reg
         return context

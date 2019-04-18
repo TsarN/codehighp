@@ -1,0 +1,18 @@
+<tr>
+    <td>{{ place }}</td>
+    <td style="width: 50%">{{ user.html_link }}</td>
+    <td>
+        {{ score }}
+        <small>/ {{ score2 }}</small>
+    </td>
+    {% for problem in problems %}
+        <td class="center">
+            {% if problem %}
+                {{ problem.score }}<br />
+                <small style="margin-left: -1px">{{ problem.score2 }}</small>
+            {% else %}
+                .
+            {% endif %}
+        </td>
+    {% endfor %}
+</tr>

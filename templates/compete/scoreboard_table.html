@@ -1,0 +1,15 @@
+<table class="compressed">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Who</th>
+            <th>Score</th>
+            {% for prob in problems %}
+                <th>{{ prob.short_name }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}{{ row.render_to_html|safe }}{% endfor %}
+    </tbody>
+</table>

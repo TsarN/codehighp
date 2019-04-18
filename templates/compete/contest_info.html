@@ -15,7 +15,11 @@
                 {% endif %}
             </li>
             <li>
-                <a href="#">Scoreboard</a>
+                {% if request.resolver_match.url_name == 'contest_scoreboard' %}
+                    <b>Scoreboard</b>
+                {% else %}
+                    <a href="{% url 'contest_scoreboard' contest.id %}">Scoreboard</a>
+                {% endif %}
             </li>
         {% if registration and registration.status == "OK" %}
             <li>

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load compete %}
+
+{% block title %}
+    {{ contest.name }} - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+{% contest_info %}
+<h3>Scoreboard</h3>
+{{ scoreboard|safe }}
+</main>
+{% endblock %}

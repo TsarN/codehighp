@@ -137,3 +137,20 @@ a.downvote-button.active {
 form.form-inline > div {
     display: inline-block;
 }
+
+table.compressed tbody * {
+    line-height: 12px;
+}
+
+table.compressed td {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+table.compressed * {
+    white-space: nowrap;
+}
+
+.center {
+    text-align: center;
+}
