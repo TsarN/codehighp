@@ -146,7 +146,7 @@ var ratingChart = new Chart(ctx, {
 
         {% if user.id == customuser.id %}
             <hr />
-            <a href="#" class="button">Edit profile</a>
+            <a href="{% url 'profile_edit' %}" class="button">Edit profile</a>
             <a href="{% url 'password_change' %}" class="button">Change password</a>
         {% endif %}
     </div>

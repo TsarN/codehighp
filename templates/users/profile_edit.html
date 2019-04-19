@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Edit profile - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+    <a href="{% url 'profile' user.username %}">&laquo; back</a>
+    <h2>
+        Edit profile
+    </h2>
+    {% crispy form %}
+</main>
+{% endblock %}

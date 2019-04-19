@@ -1,16 +1,17 @@
 import json
 
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, PasswordChangeView, PasswordChangeDoneView, PasswordResetView, \
     PasswordResetDoneView, PasswordResetCompleteView, PasswordResetConfirmView
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, UpdateView
 
 from compete.models import RatingChange
 from compete.rating import get_rank
 from users.forms import CustomAuthenticationForm, CustomUserCreationForm, CustomPasswordChangeForm, \
-    CustomPasswordResetForm, CustomSetPasswordForm
+    CustomPasswordResetForm, CustomSetPasswordForm, CustomUserEditForm
 from users.models import CustomUser
 
 
@@ -54,6 +55,15 @@ class UserProfileView(DetailView):
         context['max'] = max([1500] + [r.new_rating for r in ratings]) + 100
 
         return context
+
+
+class UserProfileEditView(LoginRequiredMixin, UpdateView):
+    model = CustomUser
+    form_class = CustomUserEditForm
+    template_name = 'users/profile_edit.html'
+
+    def get_object(self, queryset=None):
+        return self.request.user
 
 
 class CustomPasswordChangeView(PasswordChangeView):
