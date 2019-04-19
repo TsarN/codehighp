@@ -131,17 +131,16 @@ def update_contest_rating(contest_id):
         change.new_deviation = deviation
         change.new_volatility = volatility
 
-        reg.user.rating = rating
-        reg.user.deviation = deviation
-        reg.user.volatility = volatility
-        reg.user.is_rated = True
-
-        changes.append(change)
-        changes.append(reg.user)
+        changes.append((change, reg.user))
 
     with atomic():
-        for change in changes:
+        for change, user in changes:
+            user.rating = change.new_rating
+            user.deviation = change.new_deviation
+            user.volatility = change.new_volatility
+            user.is_rated = True
             change.save()
+            user.save()
 
 
 def get_rank(rating):
