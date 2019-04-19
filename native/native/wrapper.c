@@ -11,6 +11,8 @@
 #include <linux/seccomp.h>
 #include <linux/filter.h>
 
+#define MAX_FILE_SIZE (1 << 30)
+
 int _SolutionMain();
 
 static const struct sock_filter strict_filter[] = {
@@ -67,6 +69,7 @@ int main(int argc, char **argv)
 
     setlimit(RLIMIT_CPU, atoll(argv[1]), RLIM_INFINITY);
     setlimit(RLIMIT_AS, atoll(argv[2]) * 2, atoll(argv[2]) * 2);
+    setlimit(RLIMIT_FSIZE, MAX_FILE_SIZE, MAX_FILE_SIZE);
 
     if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
         return 64;
