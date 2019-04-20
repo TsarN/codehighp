@@ -102,7 +102,7 @@ var ratingChart = new Chart(ctx, {
     <div class="my-card">
         <h2>
             {% if customuser.is_staff %}
-                <span class="tag" title="Administrator">#</span>
+                <span class="admin-tag" title="Administrator">#</span>
             {% endif %}
             {{ customuser.username }}
         </h2>

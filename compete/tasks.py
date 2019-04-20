@@ -4,10 +4,12 @@ from fcntl import LOCK_SH
 from celery import shared_task
 from django.conf import settings
 from django.db.transaction import atomic
+from django.utils import timezone
 
 from compete.invoke import invoke
 from compete.compile import compile_native, compile_run
 from compete.models import Run, Contest, Problem
+from compete.rating import update_contest_rating
 from iwatchdog.config import LOCK_DIR
 from iwatchdog.handler import Flock
 from util import get_tempfile_name
@@ -91,3 +93,6 @@ def update_contest_status(contest_id):
     with atomic():
         contest.problem_set.filter(visibility=Problem.AUTO_VISIBLE_EVERYONE).update(visibility=Problem.VISIBLE_EVERYONE)
         contest.problem_set.filter(visibility=Problem.AUTO_VISIBLE_PARTICIPANTS).update(visibility=Problem.VISIBLE_PARTICIPANTS)
+
+    if contest.is_rated and not contest.rating_applied and contest.status == Contest.FINISHED:
+        update_contest_rating(contest_id)

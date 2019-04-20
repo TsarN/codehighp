@@ -6,7 +6,7 @@ import attr
 from django.conf import settings
 from django.db.transaction import atomic
 
-from compete.models import ContestRegistration, RatingChange
+from compete.models import ContestRegistration, RatingChange, Contest
 
 TAU = 0.7
 EPS = 0.000001
@@ -91,10 +91,14 @@ def calculate_rating_change(r, rd, vol, opponents):
 
 
 def update_contest_rating(contest_id):
-    regs = list(ContestRegistration.objects
-                .filter(contest_id=contest_id, official=True, status=ContestRegistration.REGISTERED)
-                .order_by('-score', '-score2')
-                .select_related('user'))
+    with atomic():
+        contest = Contest.objects.get(pk=contest_id)
+        if contest.rating_applied:
+            return
+        regs = list(ContestRegistration.objects
+                    .filter(contest_id=contest_id, official=True, status=ContestRegistration.REGISTERED)
+                    .order_by('-score', '-score2')
+                    .select_related('user'))
 
     changes = []
 
@@ -134,6 +138,8 @@ def update_contest_rating(contest_id):
         changes.append((change, reg.user))
 
     with atomic():
+        contest.rating_applied = True
+        contest.save()
         for change, user in changes:
             user.rating = change.new_rating
             user.deviation = change.new_deviation

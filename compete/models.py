@@ -54,6 +54,8 @@ class Contest(models.Model):
     duration = models.DurationField(null=True, blank=True)
     authors = models.ManyToManyField(CustomUser, related_name='authored_contests')
     participants = models.ManyToManyField(CustomUser, through='ContestRegistration', related_name='participating')
+    is_rated = models.BooleanField(blank=True, default=True)
+    rating_applied = models.BooleanField(blank=True, default=False)
 
     def __str__(self):
         return self.name
@@ -66,10 +68,12 @@ class Contest(models.Model):
         from compete.tasks import update_contest_status
         super(Contest, self).save(force_insert=force_insert, force_update=force_update,
                                   using=using, update_fields=update_fields)
-        if self.status == Contest.NOT_STARTED:
+
+        update_contest_status(self.id)
+        if self.start_date:
             update_contest_status.apply_async((self.id,), eta=self.start_date)
-        else:
-            update_contest_status(self.id)
+            if self.duration:
+                update_contest_status.apply_async((self.id,), eta=self.start_date + self.duration)
 
     def can_access(self, user_id):
         if self.status == Contest.NOT_STARTED:
@@ -120,7 +124,7 @@ class Contest(models.Model):
 
     @property
     def registration_open(self):
-        return self.status != Contest.FINISHED and self.registration != Contest.ONLY_BY_INVITES
+        return self.status == Contest.NOT_STARTED and self.registration != Contest.ONLY_BY_INVITES
 
     @property
     def status(self):
