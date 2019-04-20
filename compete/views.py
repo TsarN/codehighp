@@ -1,4 +1,5 @@
 import base64
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -74,8 +75,12 @@ class ContestView(TemplateView):
         contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
         reg = contest.ensure_can_access(self.request.user.id)
         problems = contest.problem_set.order_by('short_name').all()
-        problem_statuses = UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all()
-        problem_statuses = {i.problem_id: i for i in problem_statuses}
+        ps_list = list(UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all())
+        problem_statuses = {}
+        for i in ps_list:
+            old = problem_statuses.get(i.problem_id)
+            if not old or (old.score, old.score2) < (i.score, i.score2):
+                problem_statuses[i.problem_id] = i
         for prob in problems:
             status = problem_statuses.get(prob.id)
             if status:

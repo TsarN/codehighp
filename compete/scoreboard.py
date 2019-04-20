@@ -49,7 +49,8 @@ class ClassicScoreboard:
 
             ps = list(UserProblemStatus.objects
                       .filter(problem_id__in=[x.id for x in probs],
-                              user_id__in=[x.user_id for x in regs])
+                              user_id__in=[x.user_id for x in regs],
+                              legit=Run.DURING_CONTEST)
                       .select_related('problem'))
 
         self.problems = probs

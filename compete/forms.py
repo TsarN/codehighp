@@ -43,6 +43,8 @@ class RunSubmitForm(forms.Form):
         prob_id = form_data['prob_id']
         lang_id = form_data['lang_id']
         run = Run(user=user, problem_id=prob_id, lang=lang_id)
+        if run.problem.contest_id and run.problem.contest == Contest.RUNNING:
+            run.legit = Run.DURING_CONTEST
         run.save()
         with open(run.src_path, 'wb') as f:
             for chunk in form_data['src_file'].chunks():

@@ -341,45 +341,6 @@ class ProblemPermission(models.Model):
     access = models.CharField(max_length=2, choices=ACCESS, default=OWNER)
 
 
-class UserProblemStatus(models.Model):
-    class Meta:
-        unique_together = (('problem', 'user'),)
-
-    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    score = models.IntegerField(default=0)
-    score2 = models.IntegerField(default=0)
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        super(UserProblemStatus, self).save(force_insert, force_update, using, update_fields)
-        if not self.problem.contest_id:
-            return
-
-        with atomic():
-            if self.problem.contest.status != Contest.RUNNING:
-                return
-
-            reg = ContestRegistration.objects.filter(user_id=self.user_id, contest_id=self.problem.contest_id,
-                                                     status=ContestRegistration.REGISTERED)
-            if not reg.exists():
-                return
-
-            reg = reg[0]
-
-            res = UserProblemStatus.objects\
-                .filter(user_id=self.user_id, problem__contest_id=self.problem.contest_id)\
-                .aggregate(score=Sum(F('score')*F('problem__score')),
-                           score2=Sum(F('score2')*F('problem__score')))
-            score = round(res['score'] / Run.SCORE_DIVISOR)
-            score2 = round(res['score2'] / Run.SCORE_DIVISOR)
-
-            if (score, score2) > (reg.score, reg.score2):
-                reg.score = score
-                reg.score2 = score2
-                reg.save()
-
-
 class Run(models.Model):
     STATUS = (
         ('UK', 'Unknown'),
@@ -433,7 +394,11 @@ class Run(models.Model):
     @atomic
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        status, created = UserProblemStatus.objects.get_or_create(problem_id=self.problem_id, user_id=self.user_id)
+        status, created = UserProblemStatus.objects.get_or_create(
+            problem_id=self.problem_id,
+            user_id=self.user_id,
+            legit=self.legit or Run.DURING_UPSOLVING
+        )
         if created or (status.score, status.score2) < (self.score, self.score2):
             status.score = self.score
             status.score2 = self.score2
@@ -477,6 +442,45 @@ class Run(models.Model):
             os.remove(self.log_path)
         except:
             pass
+
+
+class UserProblemStatus(models.Model):
+    class Meta:
+        unique_together = (('problem', 'user', 'legit'),)
+
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    legit = models.CharField(max_length=2, choices=Run.LEGIT, default=Run.DURING_UPSOLVING)
+    score = models.IntegerField(default=0)
+    score2 = models.IntegerField(default=0)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        super(UserProblemStatus, self).save(force_insert, force_update, using, update_fields)
+        if not self.problem.contest_id or self.legit != Run.DURING_CONTEST:
+            return
+
+        with atomic():
+            reg = ContestRegistration.objects.filter(user_id=self.user_id, contest_id=self.problem.contest_id,
+                                                     status=ContestRegistration.REGISTERED)
+            if not reg.exists():
+                return
+
+            reg = reg[0]
+
+            res = UserProblemStatus.objects\
+                .filter(user_id=self.user_id,
+                        problem__contest_id=self.problem.contest_id,
+                        legit=Run.DURING_CONTEST)\
+                .aggregate(score=Sum(F('score')*F('problem__score')),
+                           score2=Sum(F('score2')*F('problem__score')))
+            score = round(res['score'] / Run.SCORE_DIVISOR)
+            score2 = round(res['score2'] / Run.SCORE_DIVISOR)
+
+            if (score, score2) > (reg.score, reg.score2):
+                reg.score = score
+                reg.score2 = score2
+                reg.save()
 
 
 class RatingChange(models.Model):
