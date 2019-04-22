@@ -1,7 +1,10 @@
+import re
+
 from crispy_forms.layout import Submit, Layout, Fieldset, ButtonHolder, HTML, Field
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm, PasswordChangeForm, \
     PasswordResetForm, SetPasswordForm
 from crispy_forms.helper import FormHelper
+from django.core.exceptions import ValidationError
 from django.forms import Textarea, ModelForm
 
 from users.models import CustomUser
@@ -19,6 +22,16 @@ class CustomUserCreationForm(UserCreationForm):
         for fieldname in ['username', 'password1', 'password2', 'email']:
             if fieldname in self.fields:
                 self.fields[fieldname].help_text = None
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if CustomUser.objects.filter(username__iexact=username.lower()).exists():
+            raise ValidationError("User with this username already exists")
+        if len(username) < 3:
+            raise ValidationError("Please use at least three characters")
+        if not re.match(r'^[a-zA-Z0-9_\-]+$', username):
+            raise ValidationError("Please use only letters, numbers, underscores and dashes")
+        return username
 
 
 class CustomUserChangeForm(UserChangeForm):
