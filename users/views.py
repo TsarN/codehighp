@@ -38,9 +38,9 @@ class UserProfileView(DetailView):
                        .filter(user_id=self.object.id)
                        .select_related('contest'))
 
-        contest_names = ['(Joined CodeHighp)']
-        data = [dict(x=self.object.date_joined, y=1500)]
-        color = ['white']
+        contest_names = []
+        data = []
+        color = []
 
         for rating in ratings:
             contest_names.append(rating.contest.name)
