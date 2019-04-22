@@ -33,6 +33,7 @@
         </ul>
     </div>
 
+    {% if contest.status != contest.FINISHED %}
     {% if registration and registration.status == "OK" %}
     <div class="card">
         <h3>Your score</h3>
@@ -51,6 +52,14 @@
             {% if not registration and contest.registration_open %}
                 <a href="{% url 'contest_register' contest.id %}">Register?</a>
             {% endif %}
+        </p>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="card warning">
+        <h3>Upsolving</h3>
+        <p>
+            This contest is over. Your solutions won't be displayed in scoreboard.
         </p>
     </div>
     {% endif %}
