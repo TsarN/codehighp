@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'mptt',
     'django_countries',
+    'tz_detect',
 
     'users.apps.UsersConfig',
     'main.apps.MainConfig',
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'users.middleware.TrackLastLoginMiddleware',
+    'tz_detect.middleware.TimezoneMiddleware',
 ]
 
 ROOT_URLCONF = 'codehighp.urls'
@@ -65,7 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.contrib.messages.context_processors.messages'
             ],
         },
     },
@@ -141,12 +143,11 @@ ONLINE_TIMEOUT = 300
 QUOTA_PROBLEM_RUNS = 200
 
 RANKS = (
-    ('Novice', 1200, '#888888'),
-    ('Pupil', 1350, '#008800'),
-    ('Specialist', 1500, '#008800'),
-    ('Expert', 1700, '#0000aa'),
-    ('Candidate master', 1900, '#880088'),
-    ('Master', 2050, '#ff8800'),
-    ('Advanced master', 2200, '#ff8800'),
+    ('Novice', 1000, '#888888'),
+    ('Amateur', 1200, '#008800'),
+    ('Learner', 1400, '#008888'),
+    ('Expert', 1600, '#0000aa'),
+    ('Candidate Master', 1900, '#880088'),
+    ('Master', 2200, '#ff8800'),
     ('Grandmaster', 99999, '#880000'),
 )

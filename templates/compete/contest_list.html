@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load date %}
 
 {% block title %}
     Contests - CodeHighp
@@ -8,6 +9,7 @@
 {% block body %}
 <main class="fullwidth">
 <h2>Contests</h2>
+<em>All times are in your local time zone. Hover to see times in UTC.</em>
 <table>
     <thead>
         <tr>
@@ -48,7 +50,13 @@
                     {{ author.html_link }}<br />
                 {% endfor %}
             </td>
-            <td>{{ contest.start_date }}</td>
+            <td{% if contest.start_date %} title="{{ contest.start_date|utc_date }}"{% endif %}>
+            {% if contest.start_date %}
+                {{ contest.start_date }}
+            {% else %}
+                &mdash;
+            {% endif %}
+            </td>
             <td>{{ contest.duration|default:"Infinite" }}</td>
             <td>{{ contest.timer|safe }}</td>
             <td>

@@ -12,7 +12,7 @@
 <body>
 <header>
     <a href="/" class="logo">
-        CodeHighp
+        CodeHighp <small>beta</small>
     </a>
     <a href="{% url 'contest_list' %}" class="button {% if request.resolver_match.url_name == 'contest_list' %}selected{% endif %}">
         Contests
@@ -63,6 +63,8 @@ MathJax.Hub.Config({
 <script src="{% static 'vote.js' %}" type="text/javascript"></script>
 <script src="{% static 'comment.js' %}" type="text/javascript"></script>
 <script type="text/javascript">window.CSRF_TOKEN = "{{ csrf_token }}";</script>
+{% load tz_detect %}
+{% tz_detect %}
 {% block scripts %}
 {% endblock %}
 </body>
