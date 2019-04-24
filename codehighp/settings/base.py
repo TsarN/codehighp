@@ -149,5 +149,5 @@ RANKS = (
     ('Expert', 1600, '#0000aa'),
     ('Candidate Master', 1900, '#880088'),
     ('Master', 2200, '#ff8800'),
-    ('Grandmaster', 99999, '#880000'),
+    ('Grandmaster', 99999, '#dd0000'),
 )
