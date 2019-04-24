@@ -302,12 +302,8 @@ class Problem(models.Model):
     def statement(self):
         if hasattr(self, "_statement"):
             return self._statement
-        filename = self.config.get('statement')
-        if filename:
-            with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, filename)) as f:
-                self._statement = markdown2.markdown(f.read(), safe_mode=True)
-        else:
-            self._statement = ""
+        with open(os.path.join(settings.PROBLEM_DIR, self.internal_name, 'bin', 'statement.html')) as f:
+            self._statement = f.read()
         return self._statement
 
     @property

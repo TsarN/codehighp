@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "dependencies": {
     "chart.js": "^2.8.0",
-    "mathjax": "^2.7.5",
     "mini.css": "^3.0.1"
   }
 }
