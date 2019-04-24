@@ -38,5 +38,17 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if contest.posts.exists %}
+<h3>Blog posts</h3>
+<ul>
+{% for post in contest.posts.all %}
+    <li>
+        <a href="{% url 'post' post.id %}">{{ post.title }}</a>
+    </li>
+{% endfor %}
+</ul>
+{% endif %}
+
 </main>
 {% endblock %}

@@ -56,6 +56,7 @@ class Contest(models.Model):
     participants = models.ManyToManyField(CustomUser, through='ContestRegistration', related_name='participating')
     is_rated = models.BooleanField(blank=True, default=True)
     rating_applied = models.BooleanField(blank=True, default=False)
+    posts = models.ManyToManyField('blog.Post', related_name='contests', blank=True)
 
     def __str__(self):
         return self.name
