@@ -23,7 +23,7 @@ def compile_native(src, lang_conf):
     compile_cmd += ["-I", os.path.join(settings.BASE_DIR, 'native', 'include')]
     try:
         res = subprocess.run(compile_cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT, timeout=10, text=True)
+                             stderr=subprocess.STDOUT, timeout=10, universal_newlines=True)
     except subprocess.TimeoutExpired:
         return exe, Run.COMPILATION_ERROR, 'Took too long to compile'
     except:
