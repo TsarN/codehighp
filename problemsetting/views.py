@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import FormView, TemplateView
 
-from codehighp.settings.debug import GIT_SERVICE_URL
 from compete.models import Problem, ProblemPermission
 from problemsetting.forms import AddProblemDeveloperForm, ProblemNameForm, ProblemCreateForm
 from problemsetting.tasks import update_problem_from_git, delete_problem
@@ -30,19 +29,19 @@ class ManageSSHKeysView(ProblemsetterAccessRequired, TemplateView):
         if 'delete_key' in request.POST:
             key = request.POST.get('key_name')
             if key in self.get_keys():
-                requests.post(GIT_SERVICE_URL + '/DelKey', headers=dict(key=key), auth=('git', settings.GIT_SERVICE_PASSWORD))
+                requests.post(settings.GIT_SERVICE_URL + '/DelKey', headers=dict(key=key), auth=('git', settings.GIT_SERVICE_PASSWORD))
         if 'add_key' in request.POST:
             key_name = request.POST.get('key_name')
             key = request.POST.get('key')
             if re.match(r'^[a-zA-Z0-9\-]+$', key_name) and type(key) == str:
                 key = key.strip().replace('\n', ' ')
-                requests.post(GIT_SERVICE_URL + '/AddKey',
+                requests.post(settings.GIT_SERVICE_URL + '/AddKey',
                               headers=dict(username=self.request.user.username, name=key_name, key=key),
                               auth=('git', settings.GIT_SERVICE_PASSWORD))
         return HttpResponseRedirect(request.path_info)
 
     def get_keys(self):
-        keys = requests.get(GIT_SERVICE_URL + '/GetUserKeys',
+        keys = requests.get(settings.GIT_SERVICE_URL + '/GetUserKeys',
                             headers=dict(username=self.request.user.username),
                             auth=('git', settings.GIT_SERVICE_PASSWORD)).json()
         return keys
