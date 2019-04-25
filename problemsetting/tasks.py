@@ -13,7 +13,9 @@ def update_problem_from_git(problem_id):
         return
     for invoker in settings.INVOKERS:
         res = requests.post(invoker['watchdog'] + '/UpdateProblem',
-                            headers=dict(problem=problem.internal_name)).text
+                            headers=dict(problem=problem.internal_name,
+                                         statements=str(invoker.get('statements', True)),
+                                         binaries=str(invoker.get('binaries', True)))).text
         if res:
             problem.error = res
             break

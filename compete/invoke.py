@@ -160,7 +160,7 @@ def check_problem_configuration(problem_root):
         return "Group scores must add up to {}".format(Run.SCORE_DIVISOR)
 
 
-def build_problem(prob_id):
+def build_problem(prob_id, statements=True, binaries=True):
     problem_root = os.path.join(settings.PROBLEM_DIR, prob_id)
     err = check_problem_configuration(problem_root)
     if err:
@@ -168,52 +168,56 @@ def build_problem(prob_id):
     with open(os.path.join(problem_root, 'problem.yaml')) as f:
         conf = yaml.safe_load(f)
 
-    with open(os.path.join(problem_root, conf['statement'])) as f:
-        html_statement = markdown2.markdown(f.read(), safe_mode=True)
-        for group in set(re.findall(r'\$\$(.*?)\$\$', html_statement)):
-            data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
-            if not data['success']:
-                html_statement = html_statement.replace('$${}$$'.format(group), 'TeX error: {}'.format(data.get('log')))
-            else:
-                html_statement = html_statement.replace('$${}$$'.format(group), data.get('svg'))
-
-        for group in set(re.findall(r'\$(.*?)\$', html_statement)):
-            data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='inline-tex')).json()
-            if not data['success']:
-                html_statement = html_statement.replace('${}$'.format(group), 'TeX error: {}'.format(data.get('log')))
-            else:
-                html_statement = html_statement.replace('${}$'.format(group), data.get('svg'))
-
     bin_root = os.path.join(problem_root, 'bin')
 
     if os.path.exists(bin_root):
         shutil.rmtree(bin_root)
     os.makedirs(bin_root)
 
-    with open(os.path.join(bin_root, 'statement.html'), 'w') as f:
-        f.write(html_statement)
+    if statements:
+        with open(os.path.join(problem_root, conf['statement'])) as f:
+            html_statement = markdown2.markdown(f.read(), safe_mode=True)
+            for group in set(re.findall(r'\$\$(.*?)\$\$', html_statement)):
+                data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
+                if not data['success']:
+                    html_statement = html_statement.replace('$${}$$'.format(group),
+                                                            'TeX error: {}'.format(data.get('log')))
+                else:
+                    html_statement = html_statement.replace('$${}$$'.format(group), data.get('svg'))
 
-    solve_src = os.path.join(problem_root, conf['solve'])
-    solve_exe, verdict, log = compile_run(solve_src, settings.COMPILERS[conf['solve_lang']], no_delete=True)
-    if verdict != Run.ACCEPTED:
-        return log
+            for group in set(re.findall(r'\$(.*?)\$', html_statement)):
+                data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='inline-tex')).json()
+                if not data['success']:
+                    html_statement = html_statement.replace('${}$'.format(group),
+                                                            'TeX error: {}'.format(data.get('log')))
+                else:
+                    html_statement = html_statement.replace('${}$'.format(group), data.get('svg'))
 
-    shutil.copy2(solve_exe, os.path.join(bin_root, 'solve'))
-    if solve_exe != solve_src:
-        os.remove(solve_exe)
+        with open(os.path.join(bin_root, 'statement.html'), 'w') as f:
+            f.write(html_statement)
 
-    if 'gen' not in conf:
-        return
+    if binaries:
+        solve_src = os.path.join(problem_root, conf['solve'])
+        solve_exe, verdict, log = compile_run(solve_src, settings.COMPILERS[conf['solve_lang']], no_delete=True)
+        if verdict != Run.ACCEPTED:
+            return log
 
-    gen_src = os.path.join(problem_root, conf['gen'])
+        shutil.copy2(solve_exe, os.path.join(bin_root, 'solve'))
+        if solve_exe != solve_src:
+            os.remove(solve_exe)
 
-    gen_exe, verdict, log = compile_run(gen_src, settings.COMPILERS[conf['gen_lang']], no_delete=True)
-    if verdict != Run.ACCEPTED:
-        return log
+        if 'gen' not in conf:
+            return
 
-    shutil.copy2(gen_exe, os.path.join(bin_root, 'gen'))
-    if gen_exe != gen_src:
-        os.remove(gen_exe)
+        gen_src = os.path.join(problem_root, conf['gen'])
+
+        gen_exe, verdict, log = compile_run(gen_src, settings.COMPILERS[conf['gen_lang']], no_delete=True)
+        if verdict != Run.ACCEPTED:
+            return log
+
+        shutil.copy2(gen_exe, os.path.join(bin_root, 'gen'))
+        if gen_exe != gen_src:
+            os.remove(gen_exe)
 
 
 def gen_test(gen, input_path, params):

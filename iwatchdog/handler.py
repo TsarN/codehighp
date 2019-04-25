@@ -20,7 +20,7 @@ class Flock:
         flock(self.fd, LOCK_UN)
 
 
-def update_problem(problem):
+def update_problem(problem, statements, binaries):
     lock_path = os.path.join(LOCK_DIR, problem + '.lock')
     if not os.path.exists(lock_path):
         subprocess.run(['git', 'clone', REPO_URL + problem], cwd=PROBLEM_DIR)
@@ -29,7 +29,7 @@ def update_problem(problem):
     with open(lock_path) as f:
         with Flock(f):
             subprocess.run(['git', 'pull'], cwd=os.path.join(PROBLEM_DIR, problem))
-            return build_problem(problem)
+            return build_problem(problem, statements, binaries)
 
 
 def del_problem(problem):
@@ -46,8 +46,10 @@ class InvokerWatchdog(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/UpdateProblem':
             problem = self.headers.get('problem')
+            statements = bool(self.headers.get('statements'))
+            binaries = bool(self.headers.get('binaries'))
             if problem:
-                res = update_problem(problem) or ''
+                res = update_problem(problem, statements, binaries) or ''
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain')
                 self.end_headers()
