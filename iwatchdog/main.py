@@ -1,3 +1,5 @@
+from socketserver import ThreadingMixIn
+
 import django
 django.setup()
 
@@ -8,6 +10,10 @@ from http.server import HTTPServer
 
 from iwatchdog.config import LOCK_DIR, PROBLEM_DIR
 from iwatchdog.handler import InvokerWatchdog
+
+
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
 
 
 def init():
@@ -21,7 +27,7 @@ def init():
 
 
 def listen(port):
-    server = HTTPServer(('127.0.0.1', port), InvokerWatchdog)
+    server = ThreadedHTTPServer(('127.0.0.1', port), InvokerWatchdog)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
