@@ -66,7 +66,7 @@ class UserProfileEditView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_success_url(self):
-        return reverse_lazy('profile', self.request.user.username)
+        return reverse_lazy('profile', args=[self.request.user.username])
 
 
 class CustomPasswordChangeView(PasswordChangeView):
