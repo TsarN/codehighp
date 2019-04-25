@@ -26,8 +26,8 @@ def compile_native(src, lang_conf):
                              stderr=subprocess.STDOUT, timeout=10, universal_newlines=True)
     except subprocess.TimeoutExpired:
         return exe, Run.COMPILATION_ERROR, 'Took too long to compile'
-    except:
-        return exe, Run.COMPILATION_ERROR, 'Unknown error'
+    except Exception as e:
+        return exe, Run.COMPILATION_ERROR, 'Unknown error: {}'.format(str(e))
 
     if res.returncode != 0:
         return exe, Run.COMPILATION_ERROR, res.stdout
