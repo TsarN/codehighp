@@ -29,8 +29,8 @@ class CustomUserCreationForm(UserCreationForm):
             raise ValidationError("User with this username already exists")
         if len(username) < 3:
             raise ValidationError("Please use at least three characters")
-        if not re.match(r'^[a-zA-Z0-9_\-]+$', username):
-            raise ValidationError("Please use only letters, numbers, underscores and dashes")
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            raise ValidationError("Please use only letters and numbers")
         return username
 
 
