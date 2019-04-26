@@ -16,7 +16,7 @@ repeatedly faster than anybody else after all.
 
 ## What can I do
 
-You can read from `stdin` and write to `stdout`.
+You can read from `stdin`, write to `stdout` and seek through these files.
 You can also allocate memory, but your entire program
 (code + libraries + data) cannot use more memory
 than specified in problem statement (per test).
