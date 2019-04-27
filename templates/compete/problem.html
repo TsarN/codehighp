@@ -38,6 +38,10 @@
 {% if user.is_authenticated %}
 {% if can_submit %}
     {% crispy form %}
+    <p>
+        Please read <a href="/help/flavors/{{ problem.config.flavor }}">help</a> to find out how to properly write solutions.
+        If you're using C++, don't forget to mark <code>main</code> as <code>extern "C"</code>.
+    </p>
     <hr />
 {% else %}
     <p><em>You need to register for the contest to submit solutions</em></p>
