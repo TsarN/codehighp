@@ -192,11 +192,11 @@ class ContestRunsView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        queryset = Run.objects.filter(
-            problem__contest_id=self.kwargs.get('pk'), user=self.request.user)\
-            .order_by('-id')\
-            .select_related('user', 'problem')
-        return queryset
+        queryset = Run.objects.filter(problem__contest_id=self.kwargs.get('pk'))
+        if not 'a' in self.request.GET or not self.request.user.is_superuser:
+            queryset = queryset.filter(user=self.request.user)
+        return queryset.order_by('-id')\
+                       .select_related('user', 'problem')
 
 
 class ProblemRunsView(LoginRequiredMixin, ListView):
@@ -215,11 +215,11 @@ class ProblemRunsView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        queryset = Run.objects.filter(
-            problem_id=self.kwargs.get('pk'), user=self.request.user)\
-            .order_by('-id')\
-            .select_related('user', 'problem')
-        return queryset
+        queryset = Run.objects.filter(problem_id=self.kwargs.get('pk'))
+        if not 'a' in self.request.GET or not self.request.user.is_superuser:
+            queryset = queryset.filter(user=self.request.user)
+        return queryset.order_by('-id')\
+                       .select_related('user', 'problem')
 
 
 class ProblemView(FormView):

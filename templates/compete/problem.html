@@ -45,6 +45,9 @@
     {% if runs %}
         <h3>
             <a href="{% url 'problem_runs' problem.id %}">Your runs</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'problem_runs' problem.id %}?a=1">(all)</a>
+            {% endif %}
         </h3>
         {% run_list runs %}
         {% if runs_truncated %}
