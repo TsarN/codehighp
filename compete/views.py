@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.views.generic import ListView, FormView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 
-from compete.forms import RunSubmitForm, ContestRegistrationForm
+from compete.forms import RunSubmitForm, ContestRegistrationForm, CancelRegistrationForm
 from compete.invoke import VERDICTS
 from compete.models import Problem, Run, Contest, ContestRegistration, UserProblemStatus
 from compete.scoreboard import ClassicScoreboard
@@ -102,6 +102,45 @@ class ContestView(TemplateView):
         if reg:
             context['registration'] = reg
         return context
+
+
+class ContestRegistrationsView(ListView):
+    template_name = 'compete/contest_registrations.html'
+    model = ContestRegistration
+    paginate_by = 200
+
+    def get(self, request, *args, **kwargs):
+        self.contest = get_object_or_404(Contest, pk=self.kwargs.get('pk'))
+        if not self.contest.can_see(request.user.id):
+            raise PermissionDenied
+        return super(ContestRegistrationsView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        form = CancelRegistrationForm(request.user, request.POST)
+        if form.is_valid():
+            form.cancel_registration()
+            return redirect(reverse('contest_list'))
+        return self.get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(ContestRegistrationsView, self).get_context_data(**kwargs)
+        if self.contest.registration_open:
+            reg = list(ContestRegistration.objects.filter(
+                contest_id=self.contest.id,
+                user_id=self.request.user.id,
+                status__in=[ContestRegistration.PENDING, ContestRegistration.REGISTERED]
+            ))
+            if reg:
+                context['form'] = CancelRegistrationForm(self.request.user,
+                                                         initial=dict(registration_id=reg[0].id))
+        context['contest'] = self.contest
+        return context
+
+    def get_queryset(self):
+        return ContestRegistration.objects.filter(
+            status=ContestRegistration.REGISTERED,
+            contest_id=self.contest.id
+        ).order_by('-user__rating')
 
 
 class ContestScoreboardView(TemplateView):

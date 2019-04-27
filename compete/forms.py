@@ -83,3 +83,34 @@ class ContestRegistrationForm(forms.Form):
             status = ContestRegistration.PENDING
         reg = ContestRegistration(user_id=self.user.id, contest_id=form_data['contest_id'], official=True, status=status)
         reg.save()
+
+
+class CancelRegistrationForm(forms.Form):
+    registration_id = forms.IntegerField(widget=forms.HiddenInput())
+
+    def __init__(self, user, *args, **kwargs):
+        super(CancelRegistrationForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Cancel registration'))
+        self.user = user
+
+    def clean_registration_id(self):
+        reg_id = self.cleaned_data['registration_id']
+        reg = list(ContestRegistration.objects.filter(
+            id=reg_id,
+            user_id=self.user.id,
+            status__in=[ContestRegistration.PENDING, ContestRegistration.REGISTERED]
+        ))
+        if not reg:
+            raise ValidationError("Registration ID is invalid")
+        reg = reg[0]
+        if not reg.contest.registration_open:
+            raise ValidationError("Cannot cancel registration because registration is closed")
+        return reg_id
+
+    def cancel_registration(self):
+        reg_id = self.cleaned_data['registration_id']
+        try:
+            ContestRegistration.objects.get(id=reg_id).delete()
+        except ContestRegistration.DoesNotExist:
+            pass

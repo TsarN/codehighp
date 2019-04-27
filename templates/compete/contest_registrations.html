@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load compete %}
+{% load paginate %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Registrations for {{ contest.name }} - CodeHighp
+{% endblock %}
+
+{% block body %}
+<main class="fullwidth">
+{% if form %}
+    {% crispy form %}
+{% endif %}
+<h3>Registrations for {{ contest.name }}</h3>
+<table>
+    <thead>
+    <tr>
+        <th>User</th>
+        <th>Rating</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for reg in contestregistration_list %}
+            <tr>
+                <td>{{ reg.user.html_link_country }}</td>
+                <td>
+                    {% if reg.user.is_rated %}
+                        {{ reg.user.rating }}
+                    {% else %}
+                        unrated
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% paginate %}
+
+</main>
+{% endblock %}

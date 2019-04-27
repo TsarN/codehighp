@@ -60,8 +60,10 @@
             <td>{{ contest.duration|default:"Infinite" }}</td>
             <td>{{ contest.timer|safe }}</td>
             <td>
-                <span class="icon-user"></span>
-                {{ contest.num_participants }}
+                <a href="{% url 'contest_registrations' contest.id %}">
+                    <span class="icon-user"></span>
+                    {{ contest.num_participants }}
+                </a>
             </td>
         </tr>
     {% endfor %}

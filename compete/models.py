@@ -84,6 +84,13 @@ class Contest(models.Model):
         return ContestRegistration.objects.filter(
             user_id=user_id, contest_id=self.id, status=ContestRegistration.REGISTERED).exists()
 
+    def can_see(self, user_id):
+        if user_id is None:
+            return self.visible
+        if ContestRegistration.objects.filter(user_id=user_id, contest_id=self.id).exists():
+            return True
+        return self.visible
+
     def can_register(self, user_id):
         if not self.registration_open or not self.visible:
             return False
