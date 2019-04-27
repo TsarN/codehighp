@@ -308,6 +308,8 @@ def invoke(exe, prob_id):
     score = 0
     max_cpu = 0
     max_mem = 0
+    avg_cpu = 0
+    avg_mem = 0
 
     log = dict()
 
@@ -327,11 +329,13 @@ def invoke(exe, prob_id):
         else:
             break
     group -= 1
+    avg_total = 1
 
     while group >= 0:
+        avg_total = 1
+        avg_cpu = log[group][0]['cpu']
+        avg_mem = log[group][0]['mem']
         good = True
-        max_cpu = log[group][0]['cpu']
-        max_mem = log[group][0]['mem']
         tests = prob_conf['groups'][group]['tests']
 
         for n in range(1, tests):
@@ -340,6 +344,10 @@ def invoke(exe, prob_id):
             if not ok:
                 good = False
                 break
+
+            avg_cpu += report['cpu']
+            avg_mem += report['mem']
+            avg_total += 1
             max_cpu = max(max_cpu, report['cpu'])
             max_mem = max(max_mem, report['mem'])
 
@@ -348,11 +356,20 @@ def invoke(exe, prob_id):
             log[group]['score'] -= prob_conf['groups'][group]['score']
             group -= 1
         else:
+            avg_cpu = round(avg_cpu / avg_total)
+            avg_mem = round(avg_mem / avg_total)
             break
 
-    score2 = max_cpu / prob_conf['limits']['cpu_time'] + max_mem / prob_conf['limits']['address_space']
+    if prob_conf['flavor'] == 'native':
+        cpu = avg_cpu
+        mem = avg_mem
+    else:
+        cpu = max_cpu
+        mem = max_mem
+
+    score2 = cpu / prob_conf['limits']['cpu_time'] + mem / prob_conf['limits']['address_space']
     score2 /= 2
     score2 = 1 - score2
     if score == 0:
         score2 = 0
-    return dict(score=score, score2=score2, cpu=max_cpu, mem=max_mem, log=log)
+    return dict(score=score, score2=score2, cpu=cpu, mem=mem, log=log)

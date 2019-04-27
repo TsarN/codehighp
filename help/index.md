@@ -51,7 +51,7 @@ for it.
 ### I'd like to prepare a problem or contest
 
 Great! Write an email about your ideas to `tsarn@codehighp.site` and
-we'll grant your access to problem authoring interface.
+I'll grant your access to problem authoring interface.
 Please include `[CodeHighp]` in title, so your email is not classified as spam.
 Also, don't forget to specify your CodeHighp username.
 
