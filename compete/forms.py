@@ -25,6 +25,12 @@ class RunSubmitForm(forms.Form):
             raise ValidationError("Problem does not exist")
         return prob_id
 
+    def clean_src_file(self):
+        src_file = self.cleaned_data['src_file']
+        if src_file.size > 65536:
+            raise ValidationError("File too big")
+        return src_file
+
     def clean(self):
         form_data = self.cleaned_data
         prob_id = form_data['prob_id']
