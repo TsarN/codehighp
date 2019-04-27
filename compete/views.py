@@ -226,11 +226,15 @@ class ProblemView(FormView):
     template_name = 'compete/problem.html'
     form_class = RunSubmitForm
 
-    def post(self, request, *args, **kwargs):
-        problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
-        if not self.request.user.is_authenticated:
+    def dispatch(self, request, *args, **kwargs):
+        self.problem = get_object_or_404(Problem, pk=kwargs.get('pk'))
+        if not self.problem.is_visible(request.user.id):
             raise PermissionDenied
-        if not problem.is_visible(self.request.user):
+        return super(ProblemView, self).dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        problem = self.problem
+        if not self.request.user.is_authenticated:
             raise PermissionDenied
         can_submit = False
         if problem.contest_id and not problem.get_access(self.request.user.id):
@@ -245,10 +249,8 @@ class ProblemView(FormView):
 
     def get_context_data(self, **kwargs):
         context = super(FormView, self).get_context_data(**kwargs)
-        problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        problem = self.problem
         context['problem'] = problem
-        if not problem.is_visible(self.request.user.id):
-            raise PermissionDenied
         if problem.contest_id:
             context['contest'] = problem.contest
 
@@ -278,7 +280,7 @@ class ProblemView(FormView):
         return initial
 
     def get_form_kwargs(self):
-        problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        problem = self.problem
         kwargs = super(ProblemView, self).get_form_kwargs()
         kwargs['flavor'] = problem.config['flavor']
         return kwargs
