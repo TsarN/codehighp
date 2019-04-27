@@ -140,7 +140,7 @@ class ContestRegistrationsView(ListView):
         return ContestRegistration.objects.filter(
             status=ContestRegistration.REGISTERED,
             contest_id=self.contest.id
-        ).order_by('-user__rating')
+        ).order_by('-user__rating', 'id')
 
 
 class ContestScoreboardView(TemplateView):
