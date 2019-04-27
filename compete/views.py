@@ -189,10 +189,12 @@ class ProblemView(FormView):
 
     def post(self, request, *args, **kwargs):
         problem = get_object_or_404(Problem, pk=self.kwargs.get('pk'))
+        if not self.request.user.is_authenticated:
+            raise PermissionDenied
         if not problem.is_visible(self.request.user):
             raise PermissionDenied
         can_submit = False
-        if problem.contest_id:
+        if problem.contest_id and not problem.get_access(self.request.user.id):
             reg = ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id, status=ContestRegistration.REGISTERED)
             if reg.exists() or problem.contest.status == Contest.FINISHED:
                 can_submit = True
@@ -210,6 +212,7 @@ class ProblemView(FormView):
             raise PermissionDenied
         if problem.contest_id:
             context['contest'] = problem.contest
+
         if self.request.user.is_authenticated:
             runs = Run.objects.filter(user_id=self.request.user.id, problem=problem) \
                                   .order_by('-id').select_related('user', 'problem')[:settings.RUNS_ON_PROBLEM_PAGE]
@@ -217,7 +220,7 @@ class ProblemView(FormView):
             context['runs'] = runs
             for run in runs:
                 run.flavor = problem.config['flavor'].split('.')[0]
-            if problem.contest_id:
+            if problem.contest_id and not problem.get_access(self.request.user.id):
                 reg = list(ContestRegistration.objects.filter(user_id=self.request.user.id, contest_id=problem.contest_id))
                 if reg:
                     context['registration'] = reg[0]
