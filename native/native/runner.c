@@ -89,7 +89,7 @@ int main(int argc, char **argv)
         exitcode = WEXITSTATUS(status);
     }
 
-    int cpuused = tv2msec(ru.ru_utime);
+    int cpuused = tv2msec(ru.ru_utime) + tv2msec(ru.ru_stime);
     int memused = ru.ru_maxrss;
     if (cpuused > cpulim) v = TL;
     if (memused > memlim) v = ML;
