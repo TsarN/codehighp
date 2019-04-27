@@ -47,8 +47,8 @@ class InvokerWatchdog(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/UpdateProblem':
             problem = self.headers.get('problem')
-            statements = bool(self.headers.get('statements'))
-            binaries = bool(self.headers.get('binaries'))
+            statements = (self.headers.get('statements') == 'True')
+            binaries = (self.headers.get('binaries') == 'True')
             if problem:
                 res = update_problem(problem, statements, binaries) or ''
                 self.send_response(200)
