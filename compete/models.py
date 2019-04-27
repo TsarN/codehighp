@@ -85,7 +85,7 @@ class Contest(models.Model):
             user_id=user_id, contest_id=self.id, status=ContestRegistration.REGISTERED).exists()
 
     def can_register(self, user_id):
-        if not self.registration_open or not self.can_access(user_id):
+        if not self.registration_open or not self.visible:
             return False
         return not ContestRegistration.objects.filter(
             user_id=user_id, contest_id=self.id).exists()
