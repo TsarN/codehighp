@@ -7,4 +7,4 @@ register = template.Library()
 
 @register.filter
 def markdown(value):
-    return mark_safe(markdown2.markdown(value, safe_mode=True))
+    return mark_safe(markdown2.markdown(value, safe_mode=True, extras=["fenced-code-blocks"]))
