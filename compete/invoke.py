@@ -264,9 +264,15 @@ def run_test(exe, gen, prob_id, prob_conf, group, n):
                            stdin=input_file, stdout=answer_file, stderr=subprocess.DEVNULL)
 
         with open(input_path, 'rb') as input_file, open(output_path, 'wb') as output_file:
-            res = subprocess.run([runner, exe, str(real_time_limit),
-                                  str(cpu_time_limit), str(address_space_limit)],
-                                 stdin=input_file, stdout=output_file, stderr=subprocess.PIPE)
+            cpu_list = os.getenv('CODEHIGHP_CPUS')
+            cmd = [runner, exe, str(real_time_limit),
+                   str(cpu_time_limit), str(address_space_limit)]
+            if cpu_list:
+                cmd = ['taskset', '-c', cpu_list] + cmd
+            res = subprocess.run(cmd,
+                                 stdin=input_file,
+                                 stdout=output_file,
+                                 stderr=subprocess.PIPE)
             report = json.loads(res.stderr.decode())
 
         if os.path.getsize(input_path) < settings.MAX_LOG_FILE_SIZE:
