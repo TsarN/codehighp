@@ -28,7 +28,8 @@ def update_problem(problem, statements, binaries):
             pass
     with open(lock_path) as f:
         with Flock(f):
-            subprocess.run(['git', 'pull'], cwd=os.path.join(PROBLEM_DIR, problem))
+            subprocess.run(['git', 'fetch', 'origin'], cwd=os.path.join(PROBLEM_DIR, problem))
+            subprocess.run(['git', 'reset', '--hard', 'origin/master'], cwd=os.path.join(PROBLEM_DIR, problem))
             return build_problem(problem, statements, binaries)
 
 
