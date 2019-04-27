@@ -25,20 +25,18 @@ class RunSubmitForm(forms.Form):
             raise ValidationError("Problem does not exist")
         return prob_id
 
-    def clean_src_file(self):
-        src_file = self.cleaned_data['src_file']
-        if src_file.size > 65536:
-            raise ValidationError("File too big")
-        return src_file
-
     def clean(self):
         form_data = self.cleaned_data
         prob_id = form_data['prob_id']
         lang_id = form_data['lang_id']
+        src_file = form_data['src_file']
 
         prob = Problem.objects.get(pk=prob_id)
         if prob.config['flavor'] != settings.COMPILERS[lang_id]['flavor']:
-            self._errors['lang_id'] = ["Unsupported language"]
+            raise ValidationError("Unsupported language")
+
+        if src_file.size > prob.config.get('limits', {}).get('source_size', 65536):
+            raise ValidationError("File too big")
 
         return form_data
 
