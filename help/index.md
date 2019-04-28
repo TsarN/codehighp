@@ -42,12 +42,6 @@ since I'm still testing this whole rating thing out.
 If your solution successfully compiles and runs, you will be shown
 your score. You can see detailed log by clicking on run ID.
 
-### Why do I get `Accepted` result but no points?
-
-`Accepted` result only implies that your solution compiles and runs.
-If it doesn't produce correct output on the very first test, you'll get zero points
-for it.
-
 ### I'd like to prepare a problem or contest
 
 Great! Write an email about your ideas to `tsarn@codehighp.site` and

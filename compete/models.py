@@ -395,6 +395,15 @@ class Run(models.Model):
     def __repr__(self):
         return "<Run id=%d>" % self.id
 
+    @property
+    def friendly_status(self):
+        if self.status != Run.ACCEPTED:
+            return self.get_status_display()
+        if self.score >= Run.SCORE_DIVISOR:
+            return "<b>Full solution</b>"
+        else:
+            return "Partial solution"
+
     @atomic
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

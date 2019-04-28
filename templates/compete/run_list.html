@@ -32,7 +32,7 @@
                 {% if run.status == 'CE' %}
                     <a href="{% url 'run' run.id %}">{{ run.get_status_display }}</a>
                 {% else %}
-                    {{ run.get_status_display }}
+                    {{ run.friendly_status|safe }}
                 {% endif %}
             </td>
             {% if run.status == 'AC' %}
