@@ -16,7 +16,7 @@
     </thead>
     <tbody>
     {% for problem in problem_list %}
-        <tr>
+        <tr class="{{ problem.css_class }}">
             <td>{{ problem.id }}</td>
             <td class="fullwidth">
                 <a href="{% url 'problem' problem.pk %}">

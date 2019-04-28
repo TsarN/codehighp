@@ -161,16 +161,38 @@ class ContestScoreboardView(TemplateView):
         return context
 
 
-class ProblemListView(ListView):
-    model = Problem
+class ProblemListView(TemplateView):
     template_name = 'compete/problem_list.html'
 
-    def get_queryset(self):
-        queryset = Problem.objects.filter(
-            visibility=Problem.VISIBLE_EVERYONE,
-            unlisted=False
-        ).order_by('-id')
-        return queryset
+    def get_context_data(self, **kwargs):
+        context = super(ProblemListView, self).get_context_data(**kwargs)
+        problems = Problem.objects\
+            .filter(visibility=Problem.VISIBLE_EVERYONE, unlisted=False)\
+            .order_by('-id').all()
+        ps_list = list(UserProblemStatus.objects.filter(user_id=self.request.user.id, problem__in=problems).all())
+        problem_statuses = {}
+        for i in ps_list:
+            old = problem_statuses.get(i.problem_id)
+            if not old or (old.score, old.score2) < (i.score, i.score2):
+                problem_statuses[i.problem_id] = i
+        for prob in problems:
+            status = problem_statuses.get(prob.id)
+            if status:
+                prob.attempted = True
+                prob.user_score = round(prob.score * status.score / Run.SCORE_DIVISOR)
+                prob.user_score2 = round(prob.score * status.score2 / Run.SCORE_DIVISOR)
+
+                if prob.user_score <= 0:
+                    prob.css_class = "failed-attempt"
+                elif prob.user_score >= prob.score:
+                    prob.css_class = "successful-attempt"
+                else:
+                    prob.css_class = "partial-attempt"
+            else:
+                prob.css_class = ""
+
+        context['problem_list'] = problems
+        return context
 
 
 class ContestRunsView(LoginRequiredMixin, ListView):
