@@ -179,12 +179,12 @@ class ProblemListView(TemplateView):
             status = problem_statuses.get(prob.id)
             if status:
                 prob.attempted = True
-                prob.user_score = round(prob.score * status.score / Run.SCORE_DIVISOR)
-                prob.user_score2 = round(prob.score * status.score2 / Run.SCORE_DIVISOR)
+                prob.user_score = status.score
+                prob.user_score2 = status.score2
 
                 if prob.user_score <= 0:
                     prob.css_class = "failed-attempt"
-                elif prob.user_score >= prob.score:
+                elif prob.user_score >= Run.SCORE_DIVISOR:
                     prob.css_class = "successful-attempt"
                 else:
                     prob.css_class = "partial-attempt"
