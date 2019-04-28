@@ -17,6 +17,8 @@
     <tbody>
     {% for problem in problem_list %}
         <tr class="{{ problem.css_class }}">
+            <!-- {{ problem.user_score }} -->
+            <!-- {{ problem.user_score2 }} -->
             <td>{{ problem.id }}</td>
             <td class="fullwidth">
                 <a href="{% url 'problem' problem.pk %}">
