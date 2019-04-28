@@ -39,8 +39,12 @@
 {% if can_submit %}
     {% crispy form %}
     <p>
-        Please read <a href="/help/flavors/{{ problem.config.flavor }}">help</a> to find out how to properly write solutions.
-        If you're using C++, don't forget to mark <code>main</code> as <code>extern "C"</code>.
+        <b>Please, please please!</b> read <a href="/help/flavors/{{ problem.config.flavor }}">help</a> to find out how to properly write solutions.
+        {% if problem.config.flavor == "native" %}
+            If you're using C++, don't forget to mark <code>main</code> as <code>extern "C"</code>.
+            Input/Output <b>is binary!</b> Use <code>fread</code>, <code>fwrite</code> and such.
+            See help for examples.
+        {% endif %}
     </p>
     <hr />
 {% else %}
