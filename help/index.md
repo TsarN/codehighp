@@ -10,6 +10,7 @@ problem is judged and what languages can be used.
 Currently, following flavors are available:
 
  - [native](/help/flavors/native)
+ - [vm.brainfuck](/help/flavors/vm.brainfuck)
 
 ## Scoring
 
