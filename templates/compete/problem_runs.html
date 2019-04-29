@@ -3,14 +3,14 @@
 {% load paginate %}
 
 {% block title %}
-    Runs for "{{ problem.name }}" - CodeHighp
+    Runs for "{{ problem.full_name }}" - CodeHighp
 {% endblock %}
 
 {% block body %}
     <main class="fullwidth">
         <a href="{% url 'problem' problem.id %}">&laquo; back</a>
         <h2>
-            Your runs for problem "{{ problem.id }}. {{ problem.name }}"
+            Your runs for problem "{{ problem.full_name }}"
         </h2>
         {% run_list run_list %}
         {% paginate %}
