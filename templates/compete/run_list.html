@@ -29,11 +29,7 @@
             </td>
             <td>{{ run.get_lang_display }}</td>
             <td>
-                {% if run.status == 'CE' %}
-                    <a href="{% url 'run' run.id %}">{{ run.get_status_display }}</a>
-                {% else %}
-                    {{ run.friendly_status|safe }}
-                {% endif %}
+                <a href="{% url 'run' run.id %}">{{ run.friendly_status|safe }}</a>
             </td>
             {% if run.status == 'AC' %}
                 <td>{{ run.cpu_used }} {% if run.flavor == 'vm' %}cycles{% else %}ms{% endif %}</td>
