@@ -11,7 +11,7 @@ register = template.Library()
 
 @register.filter
 def markdown(value):
-    value = markdown2.markdown(value, safe_mode=True, extras=["fenced-code-blocks"])
+    value = markdown2.markdown(value, safe_mode='escape', extras=["fenced-code-blocks"])
     usernames = list(set(re.findall(r'\[user:([a-zA-Z0-9]+?)\]', value)))
     for user in CustomUser.objects.filter(username__in=usernames):
         value = value.replace('[user:%s]' % user.username, user.html_link)

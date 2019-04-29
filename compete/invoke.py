@@ -176,7 +176,7 @@ def build_problem(prob_id, statements=True, binaries=True):
 
     if statements:
         with open(os.path.join(problem_root, conf['statement'])) as f:
-            html_statement = markdown2.markdown(f.read(), safe_mode=True)
+            html_statement = markdown2.markdown(f.read(), safe_mode='escape')
             for group in set(re.findall(r'\$\$(.*?)\$\$', html_statement)):
                 data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
                 if not data['success']:
