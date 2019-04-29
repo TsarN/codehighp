@@ -23,6 +23,8 @@ Scores for each problem in the contest are multiplied by each problem's weight
 and added together. Participants are ordered by decreasing primary score,
 and then by decreasing secondary score.
 
+[More info here...](/help/scoring)
+
 ## Rating
 
 Each participant who has participated in at least one rated contest
