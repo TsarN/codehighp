@@ -143,6 +143,9 @@ def check_problem_configuration(problem_root):
         if type(v.get('vars', {})) != dict:
             return "`groups[??].vars` must be a dict"
 
+        if type(v.get('limits', '')) != str:
+            return "`groups[??].limits` must be a string"
+
         for j in v.get('vars', {}).values():
             try:
                 str(j)
@@ -169,6 +172,24 @@ def check_problem_configuration(problem_root):
         return "Group scores must add up to {}".format(Run.SCORE_DIVISOR)
 
 
+def replace_math(x):
+    for group in set(re.findall(r'\$\$(.*?)\$\$', x)):
+        data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
+        if not data['success']:
+            x = x.replace('$${}$$'.format(group), 'TeX error: {}'.format(data.get('log')))
+        else:
+            x = x.replace('$${}$$'.format(group), data.get('svg'))
+
+    for group in set(re.findall(r'\$(.*?)\$', x)):
+        data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='inline-tex')).json()
+        if not data['success']:
+            x = x.replace('${}$'.format(group), 'TeX error: {}'.format(data.get('log')))
+        else:
+            x = x.replace('${}$'.format(group), data.get('svg'))
+
+    return x
+
+
 def build_problem(prob_id, statements=True, binaries=True):
     problem_root = os.path.join(settings.PROBLEM_DIR, prob_id)
     err = check_problem_configuration(problem_root)
@@ -186,24 +207,43 @@ def build_problem(prob_id, statements=True, binaries=True):
     if statements:
         with open(os.path.join(problem_root, conf['statement'])) as f:
             html_statement = markdown2.markdown(f.read(), safe_mode='escape')
-            for group in set(re.findall(r'\$\$(.*?)\$\$', html_statement)):
-                data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
-                if not data['success']:
-                    html_statement = html_statement.replace('$${}$$'.format(group),
-                                                            'TeX error: {}'.format(data.get('log')))
-                else:
-                    html_statement = html_statement.replace('$${}$$'.format(group), data.get('svg'))
+            html_statement = replace_math(html_statement)
 
-            for group in set(re.findall(r'\$(.*?)\$', html_statement)):
-                data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='inline-tex')).json()
-                if not data['success']:
-                    html_statement = html_statement.replace('${}$'.format(group),
-                                                            'TeX error: {}'.format(data.get('log')))
-                else:
-                    html_statement = html_statement.replace('${}$'.format(group), data.get('svg'))
+        scoring_table = '''
+<h3>Scoring</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Group</th>
+            <th>Limits</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+'''
+
+        display_scoring = False
+
+        for n, group in conf['groups'].items():
+            limits = group.get('limits', '')
+            if not limits:
+                continue
+            display_scoring = True
+            score = group.get('score', 0) / Run.SCORE_DIVISOR
+            scoring_table += '''
+<tr>
+    <td>{}</td>
+    <td>{}</td>
+    <td>{}</td>
+</tr>
+'''.format(n, replace_math(limits), score)
+
+        scoring_table += '</tbody></table>'
 
         with open(os.path.join(bin_root, 'statement.html'), 'w') as f:
             f.write(html_statement)
+            if display_scoring:
+                f.write(scoring_table)
 
     if binaries:
         solve_src = os.path.join(problem_root, conf['solve'])
