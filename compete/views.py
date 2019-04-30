@@ -299,6 +299,7 @@ class ProblemView(FormView):
     def get_initial(self):
         initial = super(ProblemView, self).get_initial()
         initial['prob_id'] = self.kwargs.get('pk')
+        initial['lang_id'] = self.request.session.get('lang:{}'.format(self.problem.config['flavor']))
         return initial
 
     def get_form_kwargs(self):
@@ -308,6 +309,7 @@ class ProblemView(FormView):
         return kwargs
 
     def form_valid(self, form):
+        self.request.session['lang:{}'.format(self.problem.config['flavor'])] = form.cleaned_data['lang_id']
         form.submit_run(self.request.user)
         return redirect(self.request.get_full_path())
 
