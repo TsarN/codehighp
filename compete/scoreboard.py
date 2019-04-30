@@ -16,8 +16,8 @@ class ClassicScoreboardRow:
 
     def render_to_html(self):
         probs = [
-            dict(score=round(x.score * x.problem.score / Run.SCORE_DIVISOR),
-                 score2=round(x.score2 * x.problem.score / Run.SCORE_DIVISOR)) if x else None
+            dict(score=x.score / Run.SCORE_DIVISOR,
+                 score2=x.score2 / Run.SCORE_DIVISOR) if x else None
             for x in self.problems
          ]
 
