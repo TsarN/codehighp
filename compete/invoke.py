@@ -14,6 +14,7 @@ import subprocess
 
 from django.conf import settings
 
+from compete import graders
 from compete.compile import compile_run
 from compete.models import Run
 
@@ -63,6 +64,14 @@ def check_problem_configuration(problem_root):
     statement = conf.get('statement')
     if type(statement) != str or '/' in statement or not os.path.isfile(os.path.join(problem_root, statement)):
         return "Invalid statement"
+
+    grader = conf.get('grader', 'linear')
+    if grader not in graders.VALID_GRADERS:
+        return "Invalid grader"
+
+    grader_params = conf.get('grader_params', dict())
+    if type(grader_params) != dict:
+        return "`grader_params` must be a dict"
 
     gen = conf.get('gen')
     if gen:
@@ -308,6 +317,8 @@ def invoke(exe, prob_id):
     score = 0
     max_cpu = 0
     max_mem = 0
+    min_cpu = 10**18
+    min_mem = 10**18
     avg_cpu = 0
     avg_mem = 0
 
@@ -329,12 +340,13 @@ def invoke(exe, prob_id):
         else:
             break
     group -= 1
-    avg_total = 1
 
     while group >= 0:
         avg_total = 1
         avg_cpu = log[group][0]['cpu']
         avg_mem = log[group][0]['mem']
+        min_cpu_ = 10 ** 18
+        min_mem_ = 10 ** 18
         good = True
         tests = prob_conf['groups'][group]['tests']
 
@@ -350,6 +362,8 @@ def invoke(exe, prob_id):
             avg_total += 1
             max_cpu = max(max_cpu, report['cpu'])
             max_mem = max(max_mem, report['mem'])
+            min_cpu_ = min(min_cpu_, report['cpu'])
+            min_mem_ = min(min_mem_, report['mem'])
 
         if not good:
             score -= prob_conf['groups'][group]['score']
@@ -358,18 +372,31 @@ def invoke(exe, prob_id):
         else:
             avg_cpu = round(avg_cpu / avg_total)
             avg_mem = round(avg_mem / avg_total)
+            min_cpu = min_cpu_
+            min_mem = min_mem_
             break
 
-    if prob_conf['flavor'] == 'native':
-        cpu = avg_cpu
-        mem = avg_mem
-    else:
-        cpu = max_cpu
-        mem = max_mem
+    if min_cpu == 10**18:
+        min_cpu = 0
+        min_mem = 0
 
-    score2 = cpu / prob_conf['limits']['cpu_time'] + mem / prob_conf['limits']['address_space']
-    score2 /= 2
-    score2 = 1 - score2
+    grader_name = prob_conf.get('grader', 'linear')
+    grader_params = prob_conf.get('grader_params', dict())
+    grader = getattr(graders, grader_name)
+
+    vars = dict(
+        min_cpu=min_cpu,
+        avg_cpu=avg_cpu,
+        max_cpu=max_cpu,
+        limit_cpu=prob_conf['limits']['cpu_time'],
+        min_mem=min_mem,
+        avg_mem=avg_mem,
+        max_mem=max_mem,
+        limit_mem=prob_conf['limits']['address_space'],
+    )
+
+    score2, cpu, mem = grader(vars, grader_params)
+
     if score == 0:
         score2 = 0
     return dict(score=score, score2=score2, cpu=cpu, mem=mem, log=log)
