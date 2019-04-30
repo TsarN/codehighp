@@ -34,4 +34,4 @@ def linear(vars, params):
     cpu = cpu_weight * vars['{}_cpu'.format(cpu_mode)] / vars['limit_cpu']
     mem = mem_weight * vars['{}_mem'.format(mem_mode)] / vars['limit_mem']
 
-    return cpu + mem, vars['{}_cpu'.format(cpu_mode)], vars['{}_mem'.format(mem_mode)]
+    return 1 - (cpu + mem), vars['{}_cpu'.format(cpu_mode)], vars['{}_mem'.format(mem_mode)]
