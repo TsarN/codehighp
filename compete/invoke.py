@@ -189,8 +189,9 @@ def build_problem(prob_id, statements=True, binaries=True):
 
     if statements:
         with open(os.path.join(problem_root, conf['statement'])) as f:
-            html_statement = markdown2.markdown(f.read(), safe_mode='escape')
+            html_statement = f.read()
             html_statement = replace_math(html_statement)
+            html_statement = markdown2.markdown(html_statement)
 
         scoring_table = '''
 <h3>Scoring</h3>
