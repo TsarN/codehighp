@@ -328,9 +328,9 @@ class RunView(SingleObjectMixin, UserPassesTestMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(RunView, self).get_context_data(**kwargs)
         run = self.object
+        run.flavor = run.problem.config['flavor'].split('.')[0]
         context['run'] = run
         context['runs'] = [run]
-        context['flavor'] = run.problem.config['flavor'].split('.')[0]
         log = run.read_log()
 
         try:
