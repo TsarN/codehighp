@@ -181,4 +181,5 @@ READ
 READ
 ADD
 WRITE
+STOP
 </pre>
