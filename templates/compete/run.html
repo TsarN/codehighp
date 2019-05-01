@@ -26,8 +26,8 @@
         {% for test in group.tests %}
             <b>Test #{{ forloop.counter0 }}</b><br />
             <pre>
-Time used: {{ test.cpu }} {% if flavor == 'vm' %}cycles{% else %}ms{% endif %}
-Memory used: {{ test.mem }} {% if flavor == 'vm' %}cells{% else %}KiB{% endif %}
+Time used: {{ test.cpu }} {% if run.flavor == 'vm' %}cycles{% else %}ms{% endif %}
+Memory used: {{ test.mem }} {% if run.flavor == 'vm' %}cells{% else %}KiB{% endif %}
 Verdict: {{ test.verdict }}
 Exit code: {{ test.exitcode }}{% if extended %}
 Input: {{ test.input }}
