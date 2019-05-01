@@ -40,7 +40,7 @@ def check_problem_configuration(problem_root):
     except yaml.YAMLError as e:
         return "Failed to parse `problem.yaml`: " + str(e)
 
-    if conf.get('flavor') not in ['native', 'vm.brainfuck']:
+    if conf.get('flavor') not in ['native', 'vm.brainfuck', 'vm.queue']:
         return "Invalid flavor"
 
     if conf.get('check') not in ['exact']:
