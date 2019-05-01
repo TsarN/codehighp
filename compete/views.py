@@ -331,6 +331,9 @@ class RunView(SingleObjectMixin, UserPassesTestMixin, TemplateView):
         run.flavor = run.problem.config['flavor'].split('.')[0]
         context['run'] = run
         context['runs'] = [run]
+        if self.request.user.is_authenticated:
+            if run.problem.get_access(self.request.user.id):
+                context['extended'] = True
         log = run.read_log()
 
         try:

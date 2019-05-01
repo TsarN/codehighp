@@ -29,8 +29,11 @@
 Time used: {{ test.cpu }} {% if flavor == 'vm' %}cycles{% else %}ms{% endif %}
 Memory used: {{ test.mem }} {% if flavor == 'vm' %}cells{% else %}KiB{% endif %}
 Verdict: {{ test.verdict }}
-Exit code: {{ test.exitcode }}
-</pre>
+Exit code: {{ test.exitcode }}{% if extended %}
+Input: {{ test.input }}
+Output: {{ test.output }}
+Answer: {{ test.answer }}
+{% endif %}</pre>
         {% endfor %}
     {% endfor %}
 </main>
