@@ -51,7 +51,7 @@ class RunSubmitForm(forms.Form):
             prob = Problem.objects.get(pk=prob_id)
         except Problem.DoesNotExist:
             prob = None
-        if prob and prob.contest.status == Contest.RUNNING:
+        if prob and prob.contest_id and prob.contest.status == Contest.RUNNING:
             run.legit = Run.DURING_CONTEST
         run.save()
         with open(run.src_path, 'wb') as f:
