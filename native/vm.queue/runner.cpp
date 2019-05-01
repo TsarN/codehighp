@@ -43,7 +43,7 @@ size_t timeused, memused;
 uint8_t pc;
 
 void stop() {
-    fprintf(stderr, "{\"verdict\": \"%s\", \"cpu\": %d, \"mem\": %d, \"real\": 0, \"exitcode\": 0}\n", verdict_s[v], timeused, memused);
+    fprintf(stderr, "{\"verdict\": \"%s\", \"cpu\": %zu, \"mem\": %zu, \"real\": 0, \"exitcode\": 0}\n", verdict_s[v], timeused, memused);
     exit(0);
 }
 
