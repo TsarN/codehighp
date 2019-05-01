@@ -6,7 +6,7 @@ from problemsetting.tasks import update_problem_from_git
 
 
 class Command(BaseCommand):
-    help = 'Updates and rebuilds EVERY SINGLE PROBLEM from git'
+    help = 'Update and rebuild EVERY SINGLE PROBLEM from git'
 
     def handle(self, *args, **options):
         with atomic():

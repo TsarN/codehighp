@@ -17,6 +17,7 @@ from django.conf import settings
 from compete import graders
 from compete.compile import compile_run
 from compete.models import Run
+from main.math import replace_math
 
 VERDICTS = {
     'OK': 'OK',
@@ -170,24 +171,6 @@ def check_problem_configuration(problem_root):
 
     if score != Run.SCORE_DIVISOR:
         return "Group scores must add up to {}".format(Run.SCORE_DIVISOR)
-
-
-def replace_math(x):
-    for group in set(re.findall(r'\$\$(.*?)\$\$', x)):
-        data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='tex')).json()
-        if not data['success']:
-            x = x.replace('$${}$$'.format(group), 'TeX error: {}'.format(data.get('log')))
-        else:
-            x = x.replace('$${}$$'.format(group), data.get('svg'))
-
-    for group in set(re.findall(r'\$(.*?)\$', x)):
-        data = requests.post(settings.MATHOID_URL, data=dict(q=group, type='inline-tex')).json()
-        if not data['success']:
-            x = x.replace('${}$'.format(group), 'TeX error: {}'.format(data.get('log')))
-        else:
-            x = x.replace('${}$'.format(group), data.get('svg'))
-
-    return x
 
 
 def build_problem(prob_id, statements=True, binaries=True):
