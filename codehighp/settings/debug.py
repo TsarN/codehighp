@@ -36,3 +36,5 @@ GIT_SERVICE_PASSWORD = '5JzGmmvNL40xDis5exx1XoWa5WJSChE3'
 GIT_REPO_URL = 'git@git.tsarn.website'
 
 MATHOID_URL = 'http://127.0.0.1:10044'
+
+MAIN_WATCHDOG = None

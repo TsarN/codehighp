@@ -5,7 +5,7 @@ from fcntl import flock, LOCK_EX, LOCK_UN
 from http.server import BaseHTTPRequestHandler
 
 from compete.invoke import build_problem
-from iwatchdog.config import LOCK_DIR, PROBLEM_DIR, REPO_URL
+from iwatchdog.config import LOCK_DIR, PROBLEM_DIR, REPO_URL, DATA_DIR
 
 
 class Flock:
@@ -64,6 +64,15 @@ class InvokerWatchdog(BaseHTTPRequestHandler):
                 self.send_response(204)
                 self.end_headers()
                 return
+
+        if self.path == '/UploadLog':
+            run = int(self.headers.get('run'))
+            data = self.rfile.read(int(self.headers['Content-Length']))
+            with open(os.path.join(DATA_DIR, 'logs', '%06.gz' % run), 'wb') as f:
+                f.write(data)
+            self.send_response(204)
+            self.end_headers()
+            return
 
         self.send_response(404)
         self.end_headers()
