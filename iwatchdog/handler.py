@@ -68,7 +68,7 @@ class InvokerWatchdog(BaseHTTPRequestHandler):
         if self.path == '/UploadLog':
             run = int(self.headers.get('run'))
             data = self.rfile.read(int(self.headers['Content-Length']))
-            with open(os.path.join(DATA_DIR, 'logs', '%06.gz' % run), 'wb') as f:
+            with open(os.path.join(DATA_DIR, 'logs', '%06d.gz' % run), 'wb') as f:
                 f.write(data)
             self.send_response(204)
             self.end_headers()
