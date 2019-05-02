@@ -6,3 +6,4 @@ PROBLEM_DIR = os.path.join(DATA_DIR, 'problems')
 LOCK_DIR = '/tmp/codehighp_iwatchdog'
 
 REPO_URL = 'git@git.tsarn.website:problems/'
+HOST = '127.0.0.1'

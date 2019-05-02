@@ -8,7 +8,7 @@ import sys
 import shutil
 from http.server import HTTPServer
 
-from iwatchdog.config import LOCK_DIR, PROBLEM_DIR
+from iwatchdog.config import LOCK_DIR, PROBLEM_DIR, HOST
 from iwatchdog.handler import InvokerWatchdog
 
 
@@ -27,7 +27,7 @@ def init():
 
 
 def listen(port):
-    server = ThreadedHTTPServer(('127.0.0.1', port), InvokerWatchdog)
+    server = ThreadedHTTPServer((HOST, port), InvokerWatchdog)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
