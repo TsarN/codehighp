@@ -441,7 +441,7 @@ class Run(models.Model):
     def write_log(self, log):
         log['status'] = self.status
         if settings.MAIN_WATCHDOG:
-            data = msgpack.packb(log)
+            data = gzip.compress(msgpack.packb(log))
             requests.post(settings.MAIN_WATCHDOG + '/UploadLog', data=data, headers=dict(run=str(self.id)))
         else:
             with gzip.open(self.log_path, 'wb') as f:
