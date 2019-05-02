@@ -38,6 +38,11 @@ such on the contests page).
 This table is subject to change though, 
 since I'm still testing this whole rating thing out.
 
+## Hardware
+
+Your submissions are tested on one core of `AMD EPYC 7401P` processor.
+It supports SSE4.2 and AVX2, so you're free to use these instruction sets.
+
 ## FAQ
 
 ### Seeing reports
