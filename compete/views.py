@@ -5,9 +5,10 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.views import View
 from django.views.generic import ListView, FormView, TemplateView
 from django.views.generic.detail import SingleObjectMixin
 
@@ -242,6 +243,21 @@ class ProblemRunsView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(user=self.request.user)
         return queryset.order_by('-id')\
                        .select_related('user', 'problem')
+
+
+class DownloadSamplesView(View):
+    def get(self, request, *args, **kwargs):
+        problem = get_object_or_404(Problem, pk=kwargs.get('pk'))
+        if not problem.is_visible(request.user.id):
+            raise PermissionDenied
+        try:
+            with open(problem.samples_zip_path, 'rb') as f:
+                data = f.read()
+            response = HttpResponse(data, content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="{}"'.format(problem.samples_zip_name)
+            return response
+        except IOError:
+            raise Http404
 
 
 class ProblemView(FormView):

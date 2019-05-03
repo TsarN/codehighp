@@ -275,6 +275,14 @@ class Problem(models.Model):
             return "{}. {}".format(self.pk, self.name)
 
     @property
+    def samples_zip_path(self):
+        return os.path.join(settings.PROBLEM_DIR, self.internal_name, 'bin', 'samples.zip')
+
+    @property
+    def samples_zip_name(self):
+        return '{}-samples.zip'.format(self.internal_name)
+
+    @property
     def config(self):
         if hasattr(self, "_config"):
             return self._config

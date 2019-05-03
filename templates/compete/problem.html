@@ -15,6 +15,9 @@
 {{ problem.statement|safe }}
 {% if samples %}
     <hr />
+    <p>
+        <a href="{% url 'problem_download_samples' problem.id problem.samples_zip_name %}">Download all samples as a ZIP file</a>
+    </p>
     {% for sample in samples %}
         <h3>
             Sample test #{{ forloop.counter0 }}

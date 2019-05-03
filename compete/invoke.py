@@ -5,6 +5,7 @@ import shutil
 import struct
 import tempfile
 import filecmp
+import zipfile
 
 import markdown2
 import requests
@@ -228,6 +229,15 @@ def build_problem(prob_id, statements=True, binaries=True):
             f.write(html_statement)
             if display_scoring:
                 f.write(scoring_table)
+
+        if conf.get('samples'):
+            samples = conf.get('samples')
+            with zipfile.ZipFile(os.path.join(bin_root, 'samples.zip'), 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for i, sample in enumerate(samples):
+                    for t, suff in (('input', '.dat'), ('answer', '.ans')):
+                        z = sample[t]
+                        data = [i for i in z['data'] if i != '\\n']
+                        zipf.writestr('%s-samples/%03d%s' % (prob_id, i, suff), struct.pack(z['format'], *data))
 
     if binaries:
         solve_src = os.path.join(problem_root, conf['solve'])
