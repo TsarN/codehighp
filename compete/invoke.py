@@ -100,22 +100,25 @@ def check_problem_configuration(problem_root):
     for sample in samples:
         for k in ["input", "answer"]:
             x = sample.get(k)
-            if type(x) != dict:
-                return "`samples[??].{}` must be a dict".format(k)
-            fmt = x.get('format')
-            dat = x.get('data')
+            if type(x) != type('input'):
+                return "both input and answer have to of same kind"
+            if type(x) not in (dict, str):
+                return "`samples[??].{}` must be a dict or string".format(k)
+            if type(x) == str:
+                fmt = x.get('format')
+                dat = x.get('data')
 
-            if type(fmt) != str:
-                return "`samples[??].{}.format` must be a string".format(k)
-            if type(dat) != list:
-                return "`samples[??].{}.data` must be a list".format(k)
+                if type(fmt) != str:
+                    return "`samples[??].{}.format` must be a string".format(k)
+                if type(dat) != list:
+                    return "`samples[??].{}.data` must be a list".format(k)
 
-            dat = [i for i in dat if i != '\\n']
+                dat = [i for i in dat if i != '\\n']
 
-            try:
-                packed = struct.pack(fmt, *dat)
-            except:
-                return "struct.pack failed, invalid format or data in sample"
+                try:
+                    packed = struct.pack(fmt, *dat)
+                except:
+                    return "struct.pack failed, invalid format or data in sample"
 
     groups = conf.get('groups')
     if type(groups) != dict:

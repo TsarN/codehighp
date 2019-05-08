@@ -301,16 +301,19 @@ class Problem(models.Model):
 
         res = []
         for sample in self.config.get('samples', []):
-            inp = expand(sample['input']['format'], sample['input']['data'])
-            ans = expand(sample['answer']['format'], sample['answer']['data'])
+            if type(sample['input']) == str:
+                res.append(dict(inp=sample['input'], ans=sample['answer']))
+            else:
+                inp = expand(sample['input']['format'], sample['input']['data'])
+                ans = expand(sample['answer']['format'], sample['answer']['data'])
 
-            instr = '''
+                instr = '''
 <p>Assuming your solution is named <code>./a.out</code>, running the following in your shell:</p>
 <pre>echo '{}' | base64 -d | ./a.out | base64</pre> <p>should produce</p>
 <pre>{}</pre>
 '''.format(inp['encoded'], ans['encoded'])
 
-            res.append(dict(inp=inp['human'], ans=ans['human'], instr=instr))
+                res.append(dict(inp=inp['human'], ans=ans['human'], instr=instr))
 
         return res
 
