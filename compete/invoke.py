@@ -104,7 +104,7 @@ def check_problem_configuration(problem_root):
                 return "both input and answer have to of same kind"
             if type(x) not in (dict, str):
                 return "`samples[??].{}` must be a dict or string".format(k)
-            if type(x) == str:
+            if type(x) == dict:
                 fmt = x.get('format')
                 dat = x.get('data')
 
