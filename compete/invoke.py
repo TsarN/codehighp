@@ -239,8 +239,12 @@ def build_problem(prob_id, statements=True, binaries=True):
                 for i, sample in enumerate(samples):
                     for t, suff in (('input', '.dat'), ('answer', '.ans')):
                         z = sample[t]
-                        data = [i for i in z['data'] if i != '\\n']
-                        zipf.writestr('%s-samples/%03d%s' % (prob_id, i, suff), struct.pack(z['format'], *data))
+                        if type(z) == dict:
+                            data = [i for i in z['data'] if i != '\\n']
+                            data = struct.pack(z['format'], *data)
+                        else:
+                            data = z
+                        zipf.writestr('%s-samples/%03d%s' % (prob_id, i, suff), z)
 
     if binaries:
         solve_src = os.path.join(problem_root, conf['solve'])
